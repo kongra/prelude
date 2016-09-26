@@ -5,6 +5,7 @@
                      :url    "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [primitive-math      "0.1.5"]
                  ;; FOR DEV. PURPOSES ONLY
                  [criterium           "0.4.4"]]
 
