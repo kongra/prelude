@@ -63,3 +63,43 @@
 (extend-protocol Msecs
   Stopwatch
   (msecs [this] (elapsed-msecs this)))
+
+
+;; STRING ROUTINES
+
+(defn blank? ;:- String|nil -> Boolean
+  [s]
+  (org.apache.commons.lang3.StringUtils/isBlank s))
+
+
+(defn not-blank? ;:- String|nil -> Boolean
+  [s]
+  (not (blank? s)))
+
+
+(defn ^String indent-string
+  ([^long n] ;:- long -> String
+   (indent-string n " "))
+
+  ([^long n ^String indent-with] ;:- long -> String -> String
+   (let [indent-with (.toString indent-with)
+         sb (StringBuilder. (p/* n (.length indent-with)))]
+     (dotimes [i n] (.append sb indent-with))
+     (.toString sb))))
+
+
+(defn ^String prefix-to-length ;:- long -> String -> String
+  [^long n ^String s]
+  (let [s    (.toString s)
+	diff (p/- n (.length s))]
+    (if (p/> diff 0) (str (indent-string diff) s) s)))
+
+
+(defn ^String postfix-to-length ;:- long -> String -> String
+  [^long n ^String s]
+  (let [s    (.toString s)
+	diff (p/- n (.length s))]
+    (if (p/> diff 0) (str s (indent-string diff)) s)))
+
+
+;; SHOWS AND FAST STRINGS CONCATENATION
