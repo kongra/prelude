@@ -67,6 +67,12 @@
 
 ;; STRING ROUTINES
 
+(defn ^String toString ;:- String -> String
+  "Non-null and type in-place check for String"
+  [s]
+  (kongra.prelude.PrimitiveChecks/toString s))
+
+
 (defn blank? ;:- String|nil -> Boolean
   [s]
   (org.apache.commons.lang3.StringUtils/isBlank s))
@@ -82,24 +88,21 @@
    (indent-string n " "))
 
   ([^long n ^String indent-with] ;:- long -> String -> String
-   (let [indent-with (.toString indent-with)
+   (let [indent-with (toString indent-with)
          sb (StringBuilder. (p/* n (.length indent-with)))]
      (dotimes [i n] (.append sb indent-with))
-     (.toString sb))))
+     (str sb))))
 
 
-(defn ^String prefix-to-length ;:- long -> String -> String
+(defn ^String prefix-2-length ;:- long -> String -> String
   [^long n ^String s]
-  (let [s    (.toString s)
+  (let [s    (toString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str (indent-string diff) s) s)))
 
 
-(defn ^String postfix-to-length ;:- long -> String -> String
+(defn ^String postfix-2-length ;:- long -> String -> String
   [^long n ^String s]
-  (let [s    (.toString s)
+  (let [s    (toString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str s (indent-string diff)) s)))
-
-
-;; SHOWS AND FAST STRINGS CONCATENATION
