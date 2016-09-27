@@ -2,7 +2,8 @@
 ;; Created 2016-09-26
 
 (ns kongra.prelude
-  (:require [primitive-math :as p]))
+  (:require [primitive-math :as    p]
+            [clojure.set    :as cset]))
 
 ;; NON-NULL AND TYPE CHECKS FOR BOXED PRIMITIVES AND STRINGS
 
@@ -210,3 +211,209 @@
 (defn not-nil? ;:- a|nil -> Boolean
   [x]
   (bnot (ref= x nil)))
+
+
+;; SOME REFLECTION UTILS
+
+(def ^:private COLLREFLECTS
+  [["java.util.List"                     #(instance? java.util.List %)]
+   ["java.util.Map"                      #(instance? java.util.Map  %)]
+   ["java.util.Set"                      #(instance? java.util.Set  %)]
+
+   ["seq? (clojure.lang.ISeq)"                                    seq?]
+   ["lazy? (clojure.lang.LazySeq)" #(instance? clojure.lang.LazySeq %)]
+
+   ["sequential? (clojure.lang.Sequential)"                sequential?]
+   ["clojure.lang.Seqable"         #(instance? clojure.lang.Seqable %)]
+   ["counted? (clojure.lang.Counted)"                         counted?]
+   ["clojure.lang.Indexed"         #(instance? clojure.lang.Indexed %)]
+   ["associative? (clojure.lang.Associative)"             associative?]
+   ["clojure.lang.ILookup"         #(instance? clojure.lang.ILookup %)]
+   ["sorted? (clojure.lang.Sorted)"                            sorted?]
+   ["reversible? (clojure.lang.Reversible)"                reversible?]
+
+   ["coll? (clojure.lang.IPersistentCollection)"                 coll?]
+   ["list? (clojure.lang.IPersistentList)"                       list?]
+   ["vector? (clojure.lang.IPersistentVector)"                 vector?]
+   ["map? (clojure.lang.IPersistentMap)"                          map?]
+   ["set? (clojure.lang.IPersistentSet)"                          set?]
+
+   ["clojure.lang.ASeq"              #(instance? clojure.lang.ASeq %)]])
+
+
+(defn coll-reflects
+  ([coll] ;:- coll -> [String]
+   (->> COLLREFLECTS
+        (filter (fn [[_ pred]] (pred coll)))
+        (map first)))
+
+  ([coll & colls] ;:- coll -> & coll -> #{String}
+   (apply cset/intersection (map #(set (coll-reflects %)) (cons coll colls)))))
+
+
+;; KLEENE LOGIC
+
+(deftype ^:private Kleene [name]
+  Object
+  (toString [_] (str name)))
+
+(def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
+(def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
+(def ^Kleene KleeneUndefined (Kleene. "KleeneUndefined"))
+
+(defn Kleene-not ;:- Kleene -> Kleene
+  [x]
+  (let [x (cast Kleene x)]
+    (cond (ref= KleeneTrue  x) KleeneFalse
+          (ref= KleeneFalse x) KleeneTrue
+          :else                KleeneUndefined)))
+
+
+(defmacro Kleene-and
+  ([] KleeneTrue)
+  ([x] `(cast Kleene ~x))
+  ([x & next]
+   `(let [x# (cast Kleene ~x)]
+      (cond (ref= KleeneFalse x#) KleeneFalse
+            (ref= KleeneTrue  x#) (Kleene-and ~@next)
+            :else ;; KleeneUndefined
+            (if (ref= KleeneFalse (Kleene-and ~@next))
+              KleeneFalse
+              KleeneUndefined)))))
+
+
+(defmacro Kleene-or
+  ([]  KleeneFalse)
+  ([x] `(cast Kleene ~x))
+  ([x & next]
+   `(let [x# (cast Kleene ~x)]
+      (cond (ref= KleeneTrue  x#) KleeneTrue
+            (ref= KleeneFalse x#) (Kleene-or ~@next)
+            :else ;; KleeneUndefined
+            (if (ref= KleeneTrue (Kleene-or ~@next))
+              KleeneTrue
+              KleeneUndefined)))))
+
+
+;; TREE SEARCH ROUTINES INSPIRED BY PAIP , CHAPTER 6.4
+;; FOR MORE SEE clongra.search
+
+;; (defn tree-search
+;;   "Searches state-spaces that have the form of trees. Starts with
+;;   a sequence of states and performs the search according to the
+;;   goal? predicate, generator of nodes adjacent do a given node
+;;   and combiner responsible of adding nodes to the search
+;;   collection of nodes."
+;;   [states goal? adjacent combiner]
+;;   (when (seq states)
+;;     (let [obj (first states)]
+;;       (if (goal? obj)
+;;         obj
+
+;;         (recur (combiner (adjacent obj) (rest states))
+;;                goal?
+;;                adjacent
+;;                combiner)))))
+
+
+;; (defn depth-first-combiner
+;;   "The combiner for the depth-first-search."
+;;   [new-nodes states]
+;;   (lazy-cat new-nodes states))
+
+
+;; (defn breadth-first-combiner
+;;   "The combiner for the breadth-first-search."
+;;   [new-nodes states]
+;;   (lazy-cat states new-nodes))
+
+
+;; (defn breadth-first-tree-levels
+;;   "Returns a lazy collection of lazy sequences of nodes belonging
+;;   to subsequent tree levels."
+;;   [start adjacent]
+;;   (->> (list start)
+;;        (iterate #(apply concat (map adjacent %)))
+;;        (take-while seq)))
+
+
+;; (defn breadth-first-tree-seq
+;;   "Returns a lazy sequence of tree nodes starting with the passed
+;;   start node where adjacent is a function generating nodes
+;;   adjacent to it's argument.
+
+;;   Goes on infinitely unless the limiting depth specified."
+;;   ([start adjacent]
+;;      (apply concat (breadth-first-tree-levels start adjacent)))
+
+;;   ([start adjacent depth]
+;;      (assert (> depth 0))
+;;      (->> (breadth-first-tree-levels start adjacent)
+;;           (take depth)
+;;           (reduce concat))))
+
+
+;; (defn breadth-first-search
+;;   "Performs a breadth first search. Goes on infinitely unless a
+;;   maximum depth specified."
+;;   ([start goal? adjacent]
+;;      (first (filter goal? (breadth-first-tree-seq start adjacent))))
+
+;;   ([start goal? adjacent depth]
+;;      (first
+;;       (filter goal?
+;; 	      (breadth-first-tree-seq start adjacent depth)))))
+
+
+;; (defn depth-first-tree-slices
+;;   "Returns a lazy collection of tree slices when traversing the
+;;   tree in start node with a function adjacent that generates
+;;   nodes adjacent to it's arguments. A slice is an information
+;;   about the nodes to visit on current traversing stage.
+
+;;   The process is infinite in depth unless the depth is specified
+;;   explicitly."
+;;   ([start adjacent]
+;;      (->> (list start)
+;;           (iterate #(lazy-cat (adjacent (first %)) (rest %)))
+;;           (take-while seq)))
+
+;;   ([start adjacent depth]
+;;      (assert (> depth 0))
+
+;;      (let [node       #(pair %1 %2)
+;; 	   node-depth #(pair-first %)
+;; 	   node-value #(pair-second %)]
+;;        (map #(map node-value %)
+;; 	    (take-while seq
+;; 			(iterate
+;; 			 #(lazy-cat
+;; 			   (let [n  (first %) nd (node-depth n)]
+;; 			     (when (< nd (dec depth))
+;; 			       (map (partial node (inc nd))
+;; 				    (adjacent (node-value n)))))
+
+;; 			   (rest %))
+
+;; 			 (list (node 0 start))))))))
+
+
+;; (defn depth-first-tree-seq
+;;   "Returns a lazy sequence of the nodes in a tree, via a
+;;   depth-first walk.  Starts with a node called start. The
+;;   function adjacent generates adjacent nodes (children) for a
+;;   passed node."
+;;   ([start adjacent]
+;;      (map first (depth-first-tree-slices start adjacent)))
+
+;;   ([start adjacent depth]
+;;      (map first (depth-first-tree-slices start adjacent depth))))
+
+
+;; (defn depth-first-search
+;;   ([start goal? adjacent]
+;;      (first (filter goal? (depth-first-tree-seq start adjacent))))
+
+;;   ([start goal? adjacent depth]
+;;      (first (filter goal?
+;; 		    (depth-first-tree-seq start adjacent depth)))))
