@@ -4,6 +4,28 @@
 (ns kongra.prelude
   (:require [primitive-math :as p]))
 
+;; NON-NULL AND TYPE CHECKS FOR BOXED PRIMITIVES AND STRINGS
+
+(defn ^String chString ;:- String -> String
+  [s]
+  (kongra.prelude.PrimitiveChecks/chString s))
+
+
+(defn ^String chLong ;:- Long -> Long
+  [l]
+  (kongra.prelude.PrimitiveChecks/chLong l))
+
+
+(defn ^String chDouble ;:- Double -> Double
+  [d]
+  (kongra.prelude.PrimitiveChecks/chDouble d))
+
+
+(defn ^String chBoolean ;:- Boolean -> Boolean
+  [b]
+  (kongra.prelude.PrimitiveChecks/chBoolean b))
+
+
 ;; SYS/JVM
 
 (defn room ;:- -> nil
@@ -27,9 +49,9 @@
   ([] ;:- -> nil
    (gc true))
 
-  ([^Boolean room-after?] ;:- Boolean -> nil
+  ([room-after?] ;:- Boolean -> nil
    (System/gc)
-   (when (.booleanValue room-after?)
+   (when (chBoolean room-after?)
      (room)) nil))
 
 
@@ -67,12 +89,6 @@
 
 ;; STRING ROUTINES
 
-(defn ^String toString ;:- String -> String
-  "Non-null and type in-place check for String"
-  [s]
-  (kongra.prelude.PrimitiveChecks/toString s))
-
-
 (defn blank? ;:- String|nil -> Boolean
   [s]
   (org.apache.commons.lang3.StringUtils/isBlank s))
@@ -87,22 +103,110 @@
   ([^long n] ;:- long -> String
    (indent-string n " "))
 
-  ([^long n ^String indent-with] ;:- long -> String -> String
-   (let [indent-with (toString indent-with)
+  ([^long n indent-with] ;:- long -> String -> String
+   (let [indent-with (chString indent-with)
          sb (StringBuilder. (p/* n (.length indent-with)))]
      (dotimes [i n] (.append sb indent-with))
      (str sb))))
 
 
 (defn ^String prefix-2-length ;:- long -> String -> String
-  [^long n ^String s]
-  (let [s    (toString s)
+  [^long n s]
+  (let [s    (chString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str (indent-string diff) s) s)))
 
 
 (defn ^String postfix-2-length ;:- long -> String -> String
-  [^long n ^String s]
-  (let [s    (toString s)
+  [^long n s]
+  (let [s    (chString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str s (indent-string diff)) s)))
+
+
+;; MISC. UTILS
+
+(defn longs<
+  "Generates an 'infinite' (upto Long.MAX_VALUE) series of increasing
+  Long values."
+  ([^long start] ;:- long -> (Long)
+   (longs< start 1))
+
+  ([^long start ^long step] ;:- long -> long -> (Long)
+   (clojure.lang.LongRange/create start Long/MAX_VALUE step)))
+
+
+(defn longs>
+  "Generates an 'infinite' (downto Long.MIN_VALUE) series of decreasing
+  Long values."
+  ([^long start] ;:- long -> (Long)
+   (longs> start -1))
+
+  ([^long start ^long step] ;:- Long -> Long -> (Long)
+   (clojure.lang.LongRange/create start Long/MIN_VALUE step)))
+
+
+(defn N ;:- -> (Long)
+  "A series of natural numbers."
+  []
+  (longs< 0))
+
+
+(defn mark-last ;:- (a) -> (Boolean)
+  "Takes a sequence (e0 e1 ... en) and returns (false false ... true)
+  or (false false ...) if the argument is infinite. Lazy."
+  [coll]
+  (if-not (seq coll)
+    '()
+    (let [[_ & xs] coll]
+      (if-not (seq xs)
+        '(true)
+        (cons false (lazy-seq (mark-last xs)))))))
+
+
+(defn assoc-conj ;:- coll v => {k, coll v} -> k -> v -> {k, coll v}
+  "Adds v to a collection that is a value for k in m. Uses empty-coll
+  when no collection for k in m."
+  [m k v empty-coll]
+  (assoc m k (conj (get m k empty-coll) v)))
+
+
+(defn vec-remove ;:- long -> [a] -> [a]
+  "Returns a vector that is a result of removing n-th element from the
+  vector v."
+  [^long n v]
+  (vec (concat (subvec v 0 n) (subvec v (p/inc n)))))
+
+(defn make-longs ;:- long -> long[]
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeLongs size))
+
+
+(defn make-doubles ;:- long -> double[]
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeDoubles ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeDoubles size))
+
+
+(defn make-objects ;:- long -> Object[]
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeObjects ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeObjects size))
+
+
+(defn ref=
+  "Alias of clojure.core/identical."
+  {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
+  [x y]
+  (clojure.lang.Util/identical x y))
+
+
+(defn bnot [b] ;:- Boolean -> Boolean
+  {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
+  (kongra.prelude.Primitives/bnot b))
+
+
+(defn not-nil? ;:- a|nil -> Boolean
+  [x]
+  (bnot (ref= x nil)))
