@@ -253,9 +253,9 @@
 
 ;; KLEENE LOGIC
 
-(deftype ^:private Kleene [name]
+(deftype ^:private Kleene [s]
   Object
-  (toString [_] (str name)))
+  (toString [_] (str s)))
 
 (def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
 (def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
@@ -272,12 +272,12 @@
 (defmacro Kleene-and
   ([] KleeneTrue)
   ([x] `(cast Kleene ~x))
-  ([x & next]
+  ([x & xs]
    `(let [x# (cast Kleene ~x)]
       (cond (ref= KleeneFalse x#) KleeneFalse
-            (ref= KleeneTrue  x#) (Kleene-and ~@next)
+            (ref= KleeneTrue  x#) (Kleene-and ~@xs)
             :else ;; KleeneUndefined
-            (if (ref= KleeneFalse (Kleene-and ~@next))
+            (if (ref= KleeneFalse (Kleene-and ~@xs))
               KleeneFalse
               KleeneUndefined)))))
 
@@ -285,12 +285,12 @@
 (defmacro Kleene-or
   ([]  KleeneFalse)
   ([x] `(cast Kleene ~x))
-  ([x & next]
+  ([x & xs]
    `(let [x# (cast Kleene ~x)]
       (cond (ref= KleeneTrue  x#) KleeneTrue
-            (ref= KleeneFalse x#) (Kleene-or ~@next)
+            (ref= KleeneFalse x#) (Kleene-or ~@xs)
             :else ;; KleeneUndefined
-            (if (ref= KleeneTrue (Kleene-or ~@next))
+            (if (ref= KleeneTrue (Kleene-or ~@xs))
               KleeneTrue
               KleeneUndefined)))))
 
@@ -298,122 +298,57 @@
 ;; TREE SEARCH ROUTINES INSPIRED BY PAIP , CHAPTER 6.4
 ;; FOR MORE SEE clongra.search
 
-;; (defn tree-search
-;;   "Searches state-spaces that have the form of trees. Starts with
-;;   a sequence of states and performs the search according to the
-;;   goal? predicate, generator of nodes adjacent do a given node
-;;   and combiner responsible of adding nodes to the search
-;;   collection of nodes."
-;;   [states goal? adjacent combiner]
-;;   (when (seq states)
-;;     (let [obj (first states)]
-;;       (if (goal? obj)
-;;         obj
+(defn tree-search
+  ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
+  "Searches state-spaces that have the form of trees. Starts with
+  a sequence of states and performs the search according to the
+  goal? predicate, generator of nodes adjacent do a given node
+  and combiner responsible of adding nodes to the search
+  collection of nodes."
+  [states goal? adjacent combiner]
+  (when (seq states)
+    (let [obj (first states)]
+      (if (goal? obj)
+        obj
 
-;;         (recur (combiner (adjacent obj) (rest states))
-;;                goal?
-;;                adjacent
-;;                combiner)))))
-
-
-;; (defn depth-first-combiner
-;;   "The combiner for the depth-first-search."
-;;   [new-nodes states]
-;;   (lazy-cat new-nodes states))
+        (recur (combiner (adjacent obj) (rest states))
+               goal?
+               adjacent
+               combiner)))))
 
 
-;; (defn breadth-first-combiner
-;;   "The combiner for the breadth-first-search."
-;;   [new-nodes states]
-;;   (lazy-cat states new-nodes))
+(defn depth-first-combiner ;:- (a) -> (a) -> (a)
+  "The combiner for the depth-first-search."
+  [new-nodes states]
+  (lazy-cat new-nodes states))
 
 
-;; (defn breadth-first-tree-levels
-;;   "Returns a lazy collection of lazy sequences of nodes belonging
-;;   to subsequent tree levels."
-;;   [start adjacent]
-;;   (->> (list start)
-;;        (iterate #(apply concat (map adjacent %)))
-;;        (take-while seq)))
+(defn breadth-first-combiner ;:- (a) -> (a) -> (a)
+  "The combiner for the breadth-first-search."
+  [new-nodes states]
+  (lazy-cat states new-nodes))
 
 
-;; (defn breadth-first-tree-seq
-;;   "Returns a lazy sequence of tree nodes starting with the passed
-;;   start node where adjacent is a function generating nodes
-;;   adjacent to it's argument.
-
-;;   Goes on infinitely unless the limiting depth specified."
-;;   ([start adjacent]
-;;      (apply concat (breadth-first-tree-levels start adjacent)))
-
-;;   ([start adjacent depth]
-;;      (assert (> depth 0))
-;;      (->> (breadth-first-tree-levels start adjacent)
-;;           (take depth)
-;;           (reduce concat))))
+(defn breadth-first-tree-levels
+  ;;:- a -> (a -> (a)) -> ((a))
+  "Returns a lazy collection of lazy sequences of nodes belonging
+  to subsequent tree levels."
+  [start adjacent]
+  (->> (list start)
+       (iterate #(mapcat adjacent %))
+       (take-while seq)))
 
 
-;; (defn breadth-first-search
-;;   "Performs a breadth first search. Goes on infinitely unless a
-;;   maximum depth specified."
-;;   ([start goal? adjacent]
-;;      (first (filter goal? (breadth-first-tree-seq start adjacent))))
+(defn breadth-first-tree-seq
+  "Returns a lazy sequence of tree nodes starting with the passed
+  start node where adjacent is a function generating nodes
+  adjacent to it's argument.
 
-;;   ([start goal? adjacent depth]
-;;      (first
-;;       (filter goal?
-;; 	      (breadth-first-tree-seq start adjacent depth)))))
+  Goes on infinitely unless the limiting depth specified."
+  ([start adjacent] ;:- a -> (a -> (a)) -> (a)
+     (apply concat (breadth-first-tree-levels start adjacent)))
 
-
-;; (defn depth-first-tree-slices
-;;   "Returns a lazy collection of tree slices when traversing the
-;;   tree in start node with a function adjacent that generates
-;;   nodes adjacent to it's arguments. A slice is an information
-;;   about the nodes to visit on current traversing stage.
-
-;;   The process is infinite in depth unless the depth is specified
-;;   explicitly."
-;;   ([start adjacent]
-;;      (->> (list start)
-;;           (iterate #(lazy-cat (adjacent (first %)) (rest %)))
-;;           (take-while seq)))
-
-;;   ([start adjacent depth]
-;;      (assert (> depth 0))
-
-;;      (let [node       #(pair %1 %2)
-;; 	   node-depth #(pair-first %)
-;; 	   node-value #(pair-second %)]
-;;        (map #(map node-value %)
-;; 	    (take-while seq
-;; 			(iterate
-;; 			 #(lazy-cat
-;; 			   (let [n  (first %) nd (node-depth n)]
-;; 			     (when (< nd (dec depth))
-;; 			       (map (partial node (inc nd))
-;; 				    (adjacent (node-value n)))))
-
-;; 			   (rest %))
-
-;; 			 (list (node 0 start))))))))
-
-
-;; (defn depth-first-tree-seq
-;;   "Returns a lazy sequence of the nodes in a tree, via a
-;;   depth-first walk.  Starts with a node called start. The
-;;   function adjacent generates adjacent nodes (children) for a
-;;   passed node."
-;;   ([start adjacent]
-;;      (map first (depth-first-tree-slices start adjacent)))
-
-;;   ([start adjacent depth]
-;;      (map first (depth-first-tree-slices start adjacent depth))))
-
-
-;; (defn depth-first-search
-;;   ([start goal? adjacent]
-;;      (first (filter goal? (depth-first-tree-seq start adjacent))))
-
-;;   ([start goal? adjacent depth]
-;;      (first (filter goal?
-;; 		    (depth-first-tree-seq start adjacent depth)))))
+  ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
+     (->> (breadth-first-tree-levels start adjacent)
+          (take depth)
+          (reduce concat))))
