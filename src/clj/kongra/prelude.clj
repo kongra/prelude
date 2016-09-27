@@ -12,24 +12,20 @@
   [s]
   (kongra.prelude.PrimitiveChecks/chString s))
 
-
 (defn ^String chLong ;:- Long -> Long
   {:inline (fn [l] `(kongra.prelude.PrimitiveChecks/chLong ~l))}
   [l]
   (kongra.prelude.PrimitiveChecks/chLong l))
-
 
 (defn ^String chDouble ;:- Double -> Double
   {:inline (fn [d] `(kongra.prelude.PrimitiveChecks/chDouble ~d))}
   [d]
   (kongra.prelude.PrimitiveChecks/chDouble d))
 
-
 (defn ^String chBoolean ;:- Boolean -> Boolean
   {:inline (fn [b] `(kongra.prelude.PrimitiveChecks/chBoolean ~b))}
   [b]
   (kongra.prelude.PrimitiveChecks/chBoolean b))
-
 
 ;; SYS/JVM
 
@@ -49,7 +45,6 @@
 
     nil))
 
-
 (defn gc
   ([] ;:- -> nil
    (gc true))
@@ -59,17 +54,14 @@
    (when (chBoolean room-after?)
      (room)) nil))
 
-
 (defmacro with-out-systemout ;:- & sexp -> Object|nil
   [& body]
   `(binding [*out* (java.io.PrintWriter. System/out)] ~@body))
-
 
 ;; ABSTRACTION FOR ALL OBJECTS THAT MAY BE CONVERTED TO MILLISECONDS
 
 (defprotocol Msecs
   (msecs [this])) ;:- Msecs this => this -> x|number?
-
 
 ;; ELAPSED TIME IN MILLIS
 
@@ -79,18 +71,15 @@
   []
   (Stopwatch. (System/nanoTime)))
 
-
 (defn elapsed-msecs ^double ;:- Stopwatch -> double
   [^Stopwatch s]
   (let [start (p/double (.start s))
         end   (p/double (System/nanoTime))]
     (p// (p/- end start) 1e6)))
 
-
 (extend-protocol Msecs
   Stopwatch
   (msecs [this] (elapsed-msecs this)))
-
 
 ;; STRING ROUTINES
 
@@ -98,11 +87,9 @@
   [s]
   (org.apache.commons.lang3.StringUtils/isBlank s))
 
-
 (defn not-blank? ;:- String|nil -> Boolean
   [s]
   (not (blank? s)))
-
 
 (defn ^String indent-string
   ([^long n] ;:- long -> String
@@ -114,20 +101,17 @@
      (dotimes [i n] (.append sb indent-with))
      (str sb))))
 
-
 (defn ^String prefix-2-length ;:- long -> String -> String
   [^long n s]
   (let [s    (chString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str (indent-string diff) s) s)))
 
-
 (defn ^String postfix-2-length ;:- long -> String -> String
   [^long n s]
   (let [s    (chString s)
 	diff (p/- n (.length s))]
     (if (p/> diff 0) (str s (indent-string diff)) s)))
-
 
 ;; MISC. UTILS
 
@@ -140,7 +124,6 @@
   ([^long start ^long step] ;:- long -> long -> (Long)
    (clojure.lang.LongRange/create start Long/MAX_VALUE step)))
 
-
 (defn longs>
   "Generates an 'infinite' (downto Long.MIN_VALUE) series of decreasing
   Long values."
@@ -150,12 +133,10 @@
   ([^long start ^long step] ;:- Long -> Long -> (Long)
    (clojure.lang.LongRange/create start Long/MIN_VALUE step)))
 
-
 (defn N ;:- -> (Long)
   "A series of natural numbers."
   []
   (longs< 0))
-
 
 (defn mark-last ;:- (a) -> (Boolean)
   "Takes a sequence (e0 e1 ... en) and returns (false false ... true)
@@ -168,13 +149,11 @@
         '(true)
         (cons false (lazy-seq (mark-last xs)))))))
 
-
 (defn assoc-conj ;:- coll v => {k, coll v} -> k -> v -> {k, coll v}
   "Adds v to a collection that is a value for k in m. Uses empty-coll
   when no collection for k in m."
   [m k v empty-coll]
   (assoc m k (conj (get m k empty-coll) v)))
-
 
 (defn vec-remove ;:- long -> [a] -> [a]
   "Returns a vector that is a result of removing n-th element from the
@@ -187,18 +166,15 @@
   [^long size]
   (kongra.prelude.Primitives/makeLongs size))
 
-
 (defn make-doubles ;:- long -> double[]
   {:inline (fn [size] `(kongra.prelude.Primitives/makeDoubles ~size))}
   [^long size]
   (kongra.prelude.Primitives/makeDoubles size))
 
-
 (defn make-objects ;:- long -> Object[]
   {:inline (fn [size] `(kongra.prelude.Primitives/makeObjects ~size))}
   [^long size]
   (kongra.prelude.Primitives/makeObjects size))
-
 
 (defn ref=
   "Alias of clojure.core/identical."
@@ -206,16 +182,13 @@
   [x y]
   (clojure.lang.Util/identical x y))
 
-
 (defn bnot [b] ;:- Boolean -> Boolean
   {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
   (kongra.prelude.Primitives/bnot b))
 
-
 (defn not-nil? ;:- a|nil -> Boolean
   [x]
   (bnot (ref= x nil)))
-
 
 ;; SOME REFLECTION UTILS
 
@@ -244,7 +217,6 @@
 
    ["clojure.lang.ASeq"              #(instance? clojure.lang.ASeq %)]])
 
-
 (defn coll-reflects
   ([coll] ;:- coll -> [String]
    (->> COLLREFLECTS
@@ -253,7 +225,6 @@
 
   ([coll & colls] ;:- coll -> & coll -> #{String}
    (apply cset/intersection (map #(set (coll-reflects %)) (cons coll colls)))))
-
 
 ;; KLEENE LOGIC
 
@@ -272,7 +243,6 @@
           (ref= KleeneFalse x) KleeneTrue
           :else                KleeneUndefined)))
 
-
 (defmacro Kleene-and
   ([] KleeneTrue)
   ([x] `(cast Kleene ~x))
@@ -284,7 +254,6 @@
             (if (ref= KleeneFalse (Kleene-and ~@xs))
               KleeneFalse
               KleeneUndefined)))))
-
 
 (defmacro Kleene-or
   ([]  KleeneFalse)
@@ -298,8 +267,7 @@
               KleeneTrue
               KleeneUndefined)))))
 
-
-;; TREE SEARCH ROUTINES INSPIRED BY PAIP , CHAPTER 6.4
+;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
 ;; FOR MORE SEE clongra.search
 
 (defn tree-search
@@ -320,18 +288,15 @@
                adjacent
                combiner)))))
 
-
 (defn depth-first-combiner ;:- (a) -> (a) -> (a)
   "The combiner for the depth-first-search."
   [new-nodes states]
   (lazy-cat new-nodes states))
 
-
 (defn breadth-first-combiner ;:- (a) -> (a) -> (a)
   "The combiner for the breadth-first-search."
   [new-nodes states]
   (lazy-cat states new-nodes))
-
 
 (defn breadth-first-tree-levels
   ;;:- a -> (a -> (a)) -> ((a))
@@ -341,7 +306,6 @@
   (->> (list start)
        (iterate #(mapcat adjacent %))
        (take-while seq)))
-
 
 (defn breadth-first-tree-seq
   "Returns a lazy sequence of tree nodes starting with the passed
@@ -357,13 +321,11 @@
           (take depth)
           (reduce concat))))
 
-
 ;; RANDOM UTILS
 
 (defn ^String uuid ;:- -> String
   []
   (.. java.util.UUID randomUUID toString))
-
 
 (defn ^java.util.Random make-MersenneTwister ;:- long -> Random
   [^long seed]
@@ -371,21 +333,17 @@
     (kongra.prelude.Bits/putLong bs 0 seed)
     (org.uncommons.maths.random.MersenneTwisterRNG. bs)))
 
-
 (def ^:private randist-state
   (atom (kongra.prelude.Randist. (make-MersenneTwister 0))))
-
 
 (defn ^kongra.prelude.Randist randist ;:- -> kongra.prelude.Randist
   []
   @randist-state)
 
-
 (defn set-seed! ;:- long -> nil
   [^long seed]
   (reset! randist-state
           (kongra.prelude.Randist. (make-MersenneTwister seed))) nil)
-
 
 (defmacro randgen!
   [method & args]
