@@ -8,21 +8,25 @@
 ;; NON-NULL AND TYPE CHECKS FOR BOXED PRIMITIVES AND STRINGS
 
 (defn ^String chString ;:- String -> String
+  {:inline (fn [s] `(kongra.prelude.PrimitiveChecks/chString ~s))}
   [s]
   (kongra.prelude.PrimitiveChecks/chString s))
 
 
 (defn ^String chLong ;:- Long -> Long
+  {:inline (fn [l] `(kongra.prelude.PrimitiveChecks/chLong ~l))}
   [l]
   (kongra.prelude.PrimitiveChecks/chLong l))
 
 
 (defn ^String chDouble ;:- Double -> Double
+  {:inline (fn [d] `(kongra.prelude.PrimitiveChecks/chDouble ~d))}
   [d]
   (kongra.prelude.PrimitiveChecks/chDouble d))
 
 
 (defn ^String chBoolean ;:- Boolean -> Boolean
+  {:inline (fn [b] `(kongra.prelude.PrimitiveChecks/chBoolean ~b))}
   [b]
   (kongra.prelude.PrimitiveChecks/chBoolean b))
 
@@ -352,3 +356,37 @@
      (->> (breadth-first-tree-levels start adjacent)
           (take depth)
           (reduce concat))))
+
+
+;; RANDOM UTILS
+
+(defn ^String uuid ;:- -> String
+  []
+  (.. java.util.UUID randomUUID toString))
+
+
+(defn ^java.util.Random make-MersenneTwister ;:- long -> Random
+  [^long seed]
+  (let [bs (byte-array 16)]
+    (kongra.prelude.Bits/putLong bs 0 seed)
+    (org.uncommons.maths.random.MersenneTwisterRNG. bs)))
+
+
+(def ^:private randist-state
+  (atom (kongra.prelude.Randist. (make-MersenneTwister 0))))
+
+
+(defn ^kongra.prelude.Randist randist ;:- -> kongra.prelude.Randist
+  []
+  @randist-state)
+
+
+(defn set-seed! ;:- long -> nil
+  [^long seed]
+  (reset! randist-state
+          (kongra.prelude.Randist. (make-MersenneTwister seed))) nil)
+
+
+(defmacro randgen!
+  [method & args]
+  `(~method (randist) ~@args))
