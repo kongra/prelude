@@ -5,194 +5,46 @@
   (:require [primitive-math :as    p]
             [clojure.set    :as cset]))
 
-;; NON-NULL AND TYPE CHECKS FOR BOXED PRIMITIVES AND STRINGS
+;; NON-NULL AND TYPE CHECKS
 
-(defn ^String chString ;:- String -> String
-  {:inline (fn [s] `(kongra.prelude.PrimitiveChecks/chString ~s))}
-  [s]
-  (kongra.prelude.PrimitiveChecks/chString s))
+(defmacro defch
+  [chname arg pred]
+  `(defn ~chname
+     [~arg]
+     (assert ~pred (str "The argument " ~arg " violates " '~chname)) ~arg))
 
-(defn ^String chLong ;:- Long -> Long
-  {:inline (fn [l] `(kongra.prelude.PrimitiveChecks/chLong ~l))}
-  [l]
-  (kongra.prelude.PrimitiveChecks/chLong l))
+(defmacro defch-pred
+  [chname arg pred]
+  `(defch ~chname ~arg (~pred ~arg)))
 
-(defn ^String chDouble ;:- Double -> Double
-  {:inline (fn [d] `(kongra.prelude.PrimitiveChecks/chDouble ~d))}
-  [d]
-  (kongra.prelude.PrimitiveChecks/chDouble d))
+(defmacro defch-class
+  [chname arg c]
+  `(defch ~chname ~arg (instance? ~c ~arg)))
 
-(defn ^String chBoolean ;:- Boolean -> Boolean
-  {:inline (fn [b] `(kongra.prelude.PrimitiveChecks/chBoolean ~b))}
-  [b]
-  (kongra.prelude.PrimitiveChecks/chBoolean b))
+(defch-class chLong       l                    Long)
+(defch-class chDouble     d                  Double)
+(defch-class chBoolean    b                 Boolean)
+(defch-pred  chString     s                 string?)
+(defch-pred  chSeq        s                    seq?)
+(defch-class chLazy       s    clojure.lang.LazySeq)
+(defch-class chSequential s clojure.lang.Sequential)
+(defch-class chSeqable    s    clojure.lang.Seqable)
+(defch-class chASeq       s       clojure.lang.ASeq)
+(defch-pred  chCounted    c                counted?)
+(defch-class chIndexed    i    clojure.lang.Indexed)
+(defch-pred  chAssoc      a            associative?)
+(defch-class chLookup     l    clojure.lang.ILookup)
+(defch-pred  chSorted     s                 sorted?)
+(defch-pred  chReversible r             reversible?)
+(defch-pred  chColl       c                   coll?)
+(defch-pred  chList       l                   list?)
+(defch-pred  chVec        v                 vector?)
+(defch-pred  chMap        m                    map?)
+(defch-pred  chSet        s                    set?)
 
-;; SYS/JVM
+;; SOME TYPE INFOS
 
-(defn room ;:- -> nil
-  []
-  (let [free-memory  (.. Runtime getRuntime freeMemory)
-        total-memory (.. Runtime getRuntime totalMemory)
-        max-memory   (.. Runtime getRuntime maxMemory)
-        used-memory  (- total-memory free-memory)
-
-        scale (fn [arg] (double (/ arg (* 1024 1024))))]
-
-    (printf "Used  memory : %f MB\n" (scale used-memory))
-    (printf "Free  memory : %f MB\n" (scale free-memory))
-    (printf "Total memory : %f MB\n" (scale total-memory))
-    (printf "Max   memory : %f MB\n" (scale max-memory))
-
-    nil))
-
-(defn gc
-  ([] ;:- -> nil
-   (gc true))
-
-  ([room-after?] ;:- Boolean -> nil
-   (System/gc)
-   (when (chBoolean room-after?)
-     (room)) nil))
-
-(defmacro with-out-systemout ;:- & sexp -> Object|nil
-  [& body]
-  `(binding [*out* (java.io.PrintWriter. System/out)] ~@body))
-
-;; ABSTRACTION FOR ALL OBJECTS THAT MAY BE CONVERTED TO MILLISECONDS
-
-(defprotocol Msecs
-  (msecs [this])) ;:- Msecs this => this -> x|number?
-
-;; ELAPSED TIME IN MILLIS
-
-(deftype ^:private Stopwatch [^long start])
-
-(defn stopwatch ;:- -> Stopwatch
-  []
-  (Stopwatch. (System/nanoTime)))
-
-(defn elapsed-msecs ^double ;:- Stopwatch -> double
-  [^Stopwatch s]
-  (let [start (p/double (.start s))
-        end   (p/double (System/nanoTime))]
-    (p// (p/- end start) 1e6)))
-
-(extend-protocol Msecs
-  Stopwatch
-  (msecs [this] (elapsed-msecs this)))
-
-;; STRING ROUTINES
-
-(defn blank? ;:- String|nil -> Boolean
-  [s]
-  (org.apache.commons.lang3.StringUtils/isBlank s))
-
-(defn not-blank? ;:- String|nil -> Boolean
-  [s]
-  (not (blank? s)))
-
-(defn ^String indent-string
-  ([^long n] ;:- long -> String
-   (indent-string n " "))
-
-  ([^long n indent-with] ;:- long -> String -> String
-   (let [indent-with (chString indent-with)
-         sb (StringBuilder. (p/* n (.length indent-with)))]
-     (dotimes [i n] (.append sb indent-with))
-     (str sb))))
-
-(defn ^String prefix-2-length ;:- long -> String -> String
-  [^long n s]
-  (let [s    (chString s)
-	diff (p/- n (.length s))]
-    (if (p/> diff 0) (str (indent-string diff) s) s)))
-
-(defn ^String postfix-2-length ;:- long -> String -> String
-  [^long n s]
-  (let [s    (chString s)
-	diff (p/- n (.length s))]
-    (if (p/> diff 0) (str s (indent-string diff)) s)))
-
-;; MISC. UTILS
-
-(defn longs<
-  "Generates an 'infinite' (upto Long.MAX_VALUE) series of increasing
-  Long values."
-  ([^long start] ;:- long -> (Long)
-   (longs< start 1))
-
-  ([^long start ^long step] ;:- long -> long -> (Long)
-   (clojure.lang.LongRange/create start Long/MAX_VALUE step)))
-
-(defn longs>
-  "Generates an 'infinite' (downto Long.MIN_VALUE) series of decreasing
-  Long values."
-  ([^long start] ;:- long -> (Long)
-   (longs> start -1))
-
-  ([^long start ^long step] ;:- Long -> Long -> (Long)
-   (clojure.lang.LongRange/create start Long/MIN_VALUE step)))
-
-(defn N ;:- -> (Long)
-  "A series of natural numbers."
-  []
-  (longs< 0))
-
-(defn mark-last ;:- (a) -> (Boolean)
-  "Takes a sequence (e0 e1 ... en) and returns (false false ... true)
-  or (false false ...) if the argument is infinite. Lazy."
-  [coll]
-  (if-not (seq coll)
-    '()
-    (let [[_ & xs] coll]
-      (if-not (seq xs)
-        '(true)
-        (cons false (lazy-seq (mark-last xs)))))))
-
-(defn assoc-conj ;:- coll v => {k, coll v} -> k -> v -> {k, coll v}
-  "Adds v to a collection that is a value for k in m. Uses empty-coll
-  when no collection for k in m."
-  [m k v empty-coll]
-  (assoc m k (conj (get m k empty-coll) v)))
-
-(defn vec-remove ;:- long -> [a] -> [a]
-  "Returns a vector that is a result of removing n-th element from the
-  vector v."
-  [^long n v]
-  (vec (concat (subvec v 0 n) (subvec v (p/inc n)))))
-
-(defn make-longs ;:- long -> long[]
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeLongs size))
-
-(defn make-doubles ;:- long -> double[]
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeDoubles ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeDoubles size))
-
-(defn make-objects ;:- long -> Object[]
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeObjects ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeObjects size))
-
-(defn ref=
-  "Alias of clojure.core/identical."
-  {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
-  [x y]
-  (clojure.lang.Util/identical x y))
-
-(defn bnot [b] ;:- Boolean -> Boolean
-  {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
-  (kongra.prelude.Primitives/bnot b))
-
-(defn not-nil? ;:- a|nil -> Boolean
-  [x]
-  (bnot (ref= x nil)))
-
-;; SOME REFLECTION UTILS
-
-(def ^:private COLLREFLECTS
+(def ^:private TYPEINFOS
   [["java.util.List"                     #(instance? java.util.List %)]
    ["java.util.Map"                      #(instance? java.util.Map  %)]
    ["java.util.Set"                      #(instance? java.util.Set  %)]
@@ -217,14 +69,165 @@
 
    ["clojure.lang.ASeq"              #(instance? clojure.lang.ASeq %)]])
 
-(defn coll-reflects
-  ([coll] ;:- coll -> [String]
-   (->> COLLREFLECTS
-        (filter (fn [[_ pred]] (pred coll)))
-        (map first)))
+(defn typeinfos
+  [x]
+  (chSet (->> TYPEINFOS
+              (filter (fn [[_ pred]] (pred x)))
+              (map first)
+              set)))
 
-  ([coll & colls] ;:- coll -> & coll -> #{String}
-   (apply cset/intersection (map #(set (coll-reflects %)) (cons coll colls)))))
+(defn typecommons
+  [& xs]
+  (chSet (apply cset/intersection (map typeinfos xs))))
+
+(defn typediffs
+  [& xs]
+  (chSet (apply cset/difference (map typeinfos xs))))
+
+;; SYS/JVM
+
+(defn room
+  []
+  (let [free-memory  (.. Runtime getRuntime freeMemory)
+        total-memory (.. Runtime getRuntime totalMemory)
+        max-memory   (.. Runtime getRuntime maxMemory)
+        used-memory  (- total-memory free-memory)
+
+        scale (fn [arg] (double (/ arg (* 1024 1024))))]
+
+    (printf "Used  memory : %f MB\n" (scale used-memory))
+    (printf "Free  memory : %f MB\n" (scale free-memory))
+    (printf "Total memory : %f MB\n" (scale total-memory))
+    (printf "Max   memory : %f MB\n" (scale max-memory))))
+
+(defn gc
+  ([]
+   (gc true))
+
+  ([verbose?]
+   (System/gc)
+   (when (chBoolean verbose?) (room))))
+
+(defmacro with-out-systemout
+  [& body]
+  `(binding [*out* (java.io.PrintWriter. System/out)] ~@body))
+
+;; ELAPSED TIME IN MILLIS
+
+(deftype ^:private Stopwatch [^long start])
+
+(defn ^Stopwatch stopwatch
+  []
+  (Stopwatch. (System/nanoTime)))
+
+(defn msecs ^double
+  [^Stopwatch s]
+  (let [start (p/double (.start s))
+        end   (p/double (System/nanoTime))]
+    (p// (p/- end start) 1e6)))
+
+;; STRING ROUTINES
+
+(defn blank?
+  [s]
+  (chBoolean (org.apache.commons.lang3.StringUtils/isBlank s)))
+
+(defn not-blank?
+  [s]
+  (chBoolean (not (blank? s))))
+
+(defn indent-string
+  ([^long n]
+   (chString (indent-string n " ")))
+
+  ([^long n ^String with]
+   (chString (let [sb (StringBuilder. (p/* n (.length with)))]
+               (dotimes [i n] (.append sb with))
+               (str sb)))))
+
+(defn prefix-2-length
+  [^long n ^String s]
+  (chString (let [diff (p/- n (.length s))]
+              (if (p/> diff 0) (str (indent-string diff) s) s))))
+
+(defn ^String postfix-2-length
+  [^long n ^String s]
+  (chString (let [diff (p/- n (.length s))]
+              (if (p/> diff 0) (str s (indent-string diff)) s))))
+
+;; MISC. UTILS
+
+(defn longs<
+  ([^long start]
+   (chSeq (longs< start 1)))
+
+  ([^long start ^long step]
+   (chSeq (clojure.lang.LongRange/create start Long/MAX_VALUE step))))
+
+(defn longs>
+  ([^long start]
+   (chSeq (longs> start -1)))
+
+  ([^long start ^long step]
+   (chSeq (clojure.lang.LongRange/create start Long/MIN_VALUE step))))
+
+(defn N
+  []
+  (chSeq (longs< 0)))
+
+(defn mark-last
+  "Takes a sequence (e0 e1 ... en) and returns (false false ... true)
+  or (false false ...) if the argument is infinite."
+  [xs]
+  (chSeq
+   (if-not (seq (chSequential xs))
+     '()
+     (let [[_ & others] xs]
+       (if-not (seq others)
+         '(true)
+         (cons false (lazy-seq (mark-last others))))))))
+
+(defn assoc-conj
+  "Adds v to a collection that is a value for k in m. Uses empty-coll
+  when no collection for k in m."
+  [m k v empty-coll]
+  (chAssoc (assoc (chAssoc m) k (conj (get m k (chColl empty-coll)) v))))
+
+(defn vec-remove ;:- long -> [a] -> [a]
+  "Returns a vector that is a result of removing n-th element from the
+  vector v."
+  [^long n v]
+  (chVec (vec (concat (subvec (chVec v) 0      n)
+                      (subvec        v  (p/inc n))))))
+
+(defn make-longs ^longs
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeLongs size))
+
+(defn make-doubles ^doubles
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeDoubles ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeDoubles size))
+
+(defn make-objects ^objects
+  {:inline (fn [size] `(kongra.prelude.Primitives/makeObjects ~size))}
+  [^long size]
+  (kongra.prelude.Primitives/makeObjects size))
+
+(defn ref=
+  "Alias of clojure.core/identical."
+  {:inline (fn [x y] `(chBoolean (. clojure.lang.Util identical ~x ~y)))}
+  [x y]
+  (chBoolean (clojure.lang.Util/identical x y)))
+
+(defn bnot [b]
+  {:inline (fn [b] `(chBoolean (kongra.prelude.Primitives/bnot ~b)))}
+  (chBoolean (kongra.prelude.Primitives/bnot b)))
+
+(defn not-nil? ;:- a|nil -> Boolean
+  [x]
+  (chBoolean (bnot (ref= x nil))))
 
 ;; KLEENE LOGIC
 
@@ -232,22 +235,24 @@
   Object
   (toString [_] (str s)))
 
+(defch-class chKleene k Kleene)
+
 (def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
 (def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
 (def ^Kleene KleeneUndefined (Kleene. "KleeneUndefined"))
 
 (defn Kleene-not ;:- Kleene -> Kleene
   [x]
-  (let [x (cast Kleene x)]
+  (let [x (chKleene x)]
     (cond (ref= KleeneTrue  x) KleeneFalse
           (ref= KleeneFalse x) KleeneTrue
           :else                KleeneUndefined)))
 
 (defmacro Kleene-and
   ([] KleeneTrue)
-  ([x] `(cast Kleene ~x))
+  ([x] `(chKleene ~x))
   ([x & xs]
-   `(let [x# (cast Kleene ~x)]
+   `(let [x# (chKleene ~x)]
       (cond (ref= KleeneFalse x#) KleeneFalse
             (ref= KleeneTrue  x#) (Kleene-and ~@xs)
             :else ;; KleeneUndefined
@@ -257,9 +262,9 @@
 
 (defmacro Kleene-or
   ([]  KleeneFalse)
-  ([x] `(cast Kleene ~x))
+  ([x] `(chKleene ~x))
   ([x & xs]
-   `(let [x# (cast Kleene ~x)]
+   `(let [x# (chKleene ~x)]
       (cond (ref= KleeneTrue  x#) KleeneTrue
             (ref= KleeneFalse x#) (Kleene-or ~@xs)
             :else ;; KleeneUndefined
@@ -267,83 +272,85 @@
               KleeneTrue
               KleeneUndefined)))))
 
-;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
-;; FOR MORE SEE clongra.search
+;; ;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
+;; ;; FOR MORE SEE clongra.search
 
-(defn tree-search
-  ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
-  "Searches state-spaces that have the form of trees. Starts with
-  a sequence of states and performs the search according to the
-  goal? predicate, generator of nodes adjacent do a given node
-  and combiner responsible of adding nodes to the search
-  collection of nodes."
-  [states goal? adjacent combiner]
-  (when (seq states)
-    (let [obj (first states)]
-      (if (goal? obj)
-        obj
+;; (defn tree-search
+;;   ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
+;;   "Searches state-spaces that have the form of trees. Starts with
+;;   a sequence of states and performs the search according to the
+;;   goal? predicate, generator of nodes adjacent do a given node
+;;   and combiner responsible of adding nodes to the search
+;;   collection of nodes."
+;;   [states goal? adjacent combiner]
+;;   (when (seq states)
+;;     (let [obj (first states)]
+;;       (if (goal? obj)
+;;         obj
 
-        (recur (combiner (adjacent obj) (rest states))
-               goal?
-               adjacent
-               combiner)))))
+;;         (recur (combiner (adjacent obj) (rest states))
+;;                goal?
+;;                adjacent
+;;                combiner)))))
 
-(defn depth-first-combiner ;:- (a) -> (a) -> (a)
-  "The combiner for the depth-first-search."
-  [new-nodes states]
-  (lazy-cat new-nodes states))
+;; (defn depth-first-combiner ;:- (a) -> (a) -> (a)
+;;   "The combiner for the depth-first-search."
+;;   [new-nodes states]
+;;   (lazy-cat new-nodes states))
 
-(defn breadth-first-combiner ;:- (a) -> (a) -> (a)
-  "The combiner for the breadth-first-search."
-  [new-nodes states]
-  (lazy-cat states new-nodes))
+;; (defn breadth-first-combiner ;:- (a) -> (a) -> (a)
+;;   "The combiner for the breadth-first-search."
+;;   [new-nodes states]
+;;   (lazy-cat states new-nodes))
 
-(defn breadth-first-tree-levels
-  ;;:- a -> (a -> (a)) -> ((a))
-  "Returns a lazy collection of lazy sequences of nodes belonging
-  to subsequent tree levels."
-  [start adjacent]
-  (->> (list start)
-       (iterate #(mapcat adjacent %))
-       (take-while seq)))
+;; (defn breadth-first-tree-levels
+;;   ;;:- a -> (a -> (a)) -> ((a))
+;;   "Returns a lazy collection of lazy sequences of nodes belonging
+;;   to subsequent tree levels."
+;;   [start adjacent]
+;;   (->> (list start)
+;;        (iterate #(mapcat adjacent %))
+;;        (take-while seq)))
 
-(defn breadth-first-tree-seq
-  "Returns a lazy sequence of tree nodes starting with the passed
-  start node where adjacent is a function generating nodes
-  adjacent to it's argument.
+;; (defn breadth-first-tree-seq
+;;   "Returns a lazy sequence of tree nodes starting with the passed
+;;   start node where adjacent is a function generating nodes
+;;   adjacent to it's argument.
 
-  Goes on infinitely unless the limiting depth specified."
-  ([start adjacent] ;:- a -> (a -> (a)) -> (a)
-     (apply concat (breadth-first-tree-levels start adjacent)))
+;;   Goes on infinitely unless the limiting depth specified."
+;;   ([start adjacent] ;:- a -> (a -> (a)) -> (a)
+;;      (apply concat (breadth-first-tree-levels start adjacent)))
 
-  ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
-     (->> (breadth-first-tree-levels start adjacent)
-          (take depth)
-          (reduce concat))))
+;;   ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
+;;      (->> (breadth-first-tree-levels start adjacent)
+;;           (take depth)
+;;           (reduce concat))))
 
 ;; RANDOM UTILS
 
-(defn ^String uuid ;:- -> String
+(defn uuid
   []
-  (.. java.util.UUID randomUUID toString))
+  (chString (.. java.util.UUID randomUUID toString)))
 
-(defn ^java.util.Random make-MersenneTwister ;:- long -> Random
+(defch-class chRandom  r       java.util.Random)
+(defch-class chRandist r kongra.prelude.Randist)
+
+(defn make-MersenneTwister
   [^long seed]
-  (let [bs (byte-array 16)]
-    (kongra.prelude.Bits/putLong bs 0 seed)
-    (org.uncommons.maths.random.MersenneTwisterRNG. bs)))
+  (chRandom (let [bs (byte-array 16)]
+              (kongra.prelude.Bits/putLong bs 0 seed)
+              (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
 
 (def ^:private randist-state
   (atom (kongra.prelude.Randist. (make-MersenneTwister 0))))
 
-(defn ^kongra.prelude.Randist randist ;:- -> kongra.prelude.Randist
+(defn ^kongra.prelude.Randist randist
   []
-  @randist-state)
+  (chRandist @randist-state))
 
-(defn set-seed! ;:- long -> nil
+(defn set-seed!
   [^long seed]
-  (reset! randist-state
-          (kongra.prelude.Randist. (make-MersenneTwister seed))) nil)
+  (reset! randist-state (kongra.prelude.Randist. (make-MersenneTwister seed))))
 
 (defmacro randgen!
   [method & args]
