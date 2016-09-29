@@ -195,12 +195,12 @@
   [m k v empty-coll]
   (chAssoc (assoc (chAssoc m) k (conj (get m k (chColl empty-coll)) v))))
 
-(defn vec-remove ;:- long -> [a] -> [a]
+(defn vec-remove
   "Returns a vector that is a result of removing n-th element from the
   vector v."
-  [^long n v]
-  (chVec (vec (concat (subvec (chVec v) 0      n)
-                      (subvec        v  (p/inc n))))))
+  [^Long n v]
+  (chVec (vec (concat (subvec (chVec v) 0 n)
+                      (subvec v  (p/inc (.longValue n)))))))
 
 (defn make-longs ^longs
   {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
@@ -357,7 +357,6 @@
 (defmacro randgen!
   [method & args]
   `(~method (randist) ~@args))
-
 
 ;; (defn t1 [x]
 ;;   (chLong x)
