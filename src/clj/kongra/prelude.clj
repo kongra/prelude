@@ -5,84 +5,86 @@
   (:require [primitive-math :as    p]
             [clojure.set    :as cset]))
 
-;; NON-NULL AND TYPE CHECKS
+;; TYPE CHECKS
 
 (defmacro defch
-  [chname arg pred]
-  `(defn ~chname
-     [~arg]
-     (assert ~pred (str "The argument " ~arg " violates " '~chname)) ~arg))
+  ([chname pred]
+   `(defch ~chname x# ~pred))
 
-(defmacro defch-pred
-  [chname arg pred]
-  `(defch ~chname ~arg (~pred ~arg)))
+  ([chname arg pred]
+   `(do (defn ~chname
+          [~arg]
+          (assert ~(concat pred (list arg)) ) ~arg)
 
-(defmacro defch-class
-  [chname arg c]
-  `(defch ~chname ~arg (instance? ~c ~arg)))
+        (defchinfo ~chname ~arg ~pred))))
 
-(defch-class chLong       l                    Long)
-(defch-class chDouble     d                  Double)
-(defch-class chBoolean    b                 Boolean)
-(defch-pred  chString     s                 string?)
-(defch-pred  chSeq        s                    seq?)
-(defch-class chLazy       s    clojure.lang.LazySeq)
-(defch-class chSequential s clojure.lang.Sequential)
-(defch-class chSeqable    s    clojure.lang.Seqable)
-(defch-class chASeq       s       clojure.lang.ASeq)
-(defch-pred  chCounted    c                counted?)
-(defch-class chIndexed    i    clojure.lang.Indexed)
-(defch-pred  chAssoc      a            associative?)
-(defch-class chLookup     l    clojure.lang.ILookup)
-(defch-pred  chSorted     s                 sorted?)
-(defch-pred  chReversible r             reversible?)
-(defch-pred  chColl       c                   coll?)
-(defch-pred  chList       l                   list?)
-(defch-pred  chVec        v                 vector?)
-(defch-pred  chMap        m                    map?)
-(defch-pred  chSet        s                    set?)
+(def ^:private chinfos-state (atom {}))
 
-;; SOME TYPE INFOS
+(defn add-chinfo! ; To be used in (defch ...)
+  [chname pred]
+  (swap! chinfos-state
+         (fn [m]
+           (when (m chname)
+             (println "WARNING: chname already in use: " chname))
+           (assoc m chname pred))))
 
-(def ^:private TYPEINFOS
-  [["java.util.List"                     #(instance? java.util.List %)]
-   ["java.util.Map"                      #(instance? java.util.Map  %)]
-   ["java.util.Set"                      #(instance? java.util.Set  %)]
+(defmacro defchinfo ; To be used in (defch ...)
+  ([chname arg pred]
+   `(add-chinfo! (str '~chname) (fn [~arg] ~(concat pred (list arg))))))
 
-   ["seq? (clojure.lang.ISeq)"                                    seq?]
-   ["lazy? (clojure.lang.LazySeq)" #(instance? clojure.lang.LazySeq %)]
+(defch chASeq       (instance?       clojure.lang.ASeq))
+(defch chBoolean    (instance?                 Boolean))
+(defch chDouble     (instance?                  Double))
+(defch chIndexed    (instance?    clojure.lang.Indexed))
+(defch chLazy       (instance?    clojure.lang.LazySeq))
+(defch chLong       (instance?                    Long))
+(defch chLookup     (instance?    clojure.lang.ILookup))
+(defch chSeqable    (instance?    clojure.lang.Seqable))
+(defch chSequential (instance? clojure.lang.Sequential))
 
-   ["sequential? (clojure.lang.Sequential)"                sequential?]
-   ["clojure.lang.Seqable"         #(instance? clojure.lang.Seqable %)]
-   ["counted? (clojure.lang.Counted)"                         counted?]
-   ["clojure.lang.Indexed"         #(instance? clojure.lang.Indexed %)]
-   ["associative? (clojure.lang.Associative)"             associative?]
-   ["clojure.lang.ILookup"         #(instance? clojure.lang.ILookup %)]
-   ["sorted? (clojure.lang.Sorted)"                            sorted?]
-   ["reversible? (clojure.lang.Reversible)"                reversible?]
+(defch chAssoc     (associative?))
+(defch chChar             (char?))
+(defch chClass           (class?))
+(defch chColl             (coll?))
+(defch chCounted       (counted?))
+(defch chDecimal       (decimal?))
+(defch chDelay           (delay?))
+(defch chFloat           (float?))
+(defch chFn                 (fn?))
+(defch chFuture         (future?))
+(defch chIfn               (ifn?))
+(defch chInteger       (integer?))
+(defch chKeyword       (keyword?))
+(defch chList             (list?))
+(defch chMap               (map?))
+(defch chNumber         (number?))
+(defch chRatio           (ratio?))
+(defch chRational     (rational?))
+(defch chRecord         (record?))
+(defch chReduced       (reduced?))
+(defch chReversible (reversible?))
+(defch chSeq               (seq?))
+(defch chSet               (set?))
+(defch chSorted         (sorted?))
+(defch chString         (string?))
+(defch chSymbol         (symbol?))
+(defch chVar               (var?))
+(defch chVec            (vector?))
 
-   ["coll? (clojure.lang.IPersistentCollection)"                 coll?]
-   ["list? (clojure.lang.IPersistentList)"                       list?]
-   ["vector? (clojure.lang.IPersistentVector)"                 vector?]
-   ["map? (clojure.lang.IPersistentMap)"                          map?]
-   ["set? (clojure.lang.IPersistentSet)"                          set?]
-
-   ["clojure.lang.ASeq"              #(instance? clojure.lang.ASeq %)]])
-
-(defn typeinfos
+(defn chinfos
   [x]
-  (chSet (->> TYPEINFOS
+  (chSet (->> @chinfos-state
               (filter (fn [[_ pred]] (pred x)))
               (map first)
               set)))
 
-(defn typecommons
+(defn chcommons
   [& xs]
-  (chSet (apply cset/intersection (map typeinfos xs))))
+  (chSet (apply cset/intersection (map chinfos xs))))
 
-(defn typediffs
+(defn chdiffs
   [& xs]
-  (chSet (apply cset/difference (map typeinfos xs))))
+  (chSet (apply cset/difference (map chinfos xs))))
 
 ;; SYS/JVM
 
@@ -235,7 +237,7 @@
   Object
   (toString [_] (str s)))
 
-(defch-class chKleene k Kleene)
+(defch chKleene (instance? Kleene))
 
 (def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
 (def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
@@ -328,12 +330,12 @@
 
 ;; RANDOM UTILS
 
-(defn uuid
+(defn uuid!
   []
   (chString (.. java.util.UUID randomUUID toString)))
 
-(defch-class chRandom  r       java.util.Random)
-(defch-class chRandist r kongra.prelude.Randist)
+(defch chRandom  (instance?       java.util.Random))
+(defch chRandist (instance? kongra.prelude.Randist))
 
 (defn make-MersenneTwister
   [^long seed]
@@ -355,3 +357,32 @@
 (defmacro randgen!
   [method & args]
   `(~method (randist) ~@args))
+
+
+;; (defn t1 [x]
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x)
+;;   (chLong x))
+
+;; (defn foo [x] (chString x))
+
+;; (defn t2
+;;   []
+;;   (dotimes [i 1000000] (chString (foo "aaa"))))
