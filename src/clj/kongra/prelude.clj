@@ -16,7 +16,7 @@
   ([chname arg pred]
    `(do (defn ~chname [~arg]
           (assert ~(concat pred (list arg))
-                  (if ~arg
+                  (if (not-nil? ~arg)
                     (str "Illegal value " ~arg ", " (class ~arg))
                     "Illegal nil value"))
           ~arg)
