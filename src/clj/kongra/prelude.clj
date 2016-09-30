@@ -7,16 +7,21 @@
 
 ;; TYPE CHECKS
 
+(declare not-nil?)
+
 (defmacro defch
   ([chname pred]
    `(defch ~chname x# ~pred))
 
   ([chname arg pred]
-   `(do (defn ~chname
-          [~arg]
-          (assert ~(concat pred (list arg)) ) ~arg)
+   `(do (defn ~chname [~arg]
+          (assert ~(concat pred (list arg))
+                  (if ~arg
+                    (str "Illegal value " ~arg ", " (class ~arg))
+                    "Illegal nil value"))
+          ~arg)
 
-        (defchinfo ~chname ~arg ~pred))))
+        (defchinfo ~chname  ~arg  ~pred))))
 
 (def ^:private chinfos-state (atom {}))
 
@@ -25,20 +30,24 @@
   (swap! chinfos-state
          (fn [m]
            (when (m chname)
-             (println "WARNING: chname already in use: " chname))
+             (println "WARNING: chname already in use:" chname))
            (assoc m chname pred))))
 
 (defmacro defchinfo ; To be used in (defch ...)
   ([chname arg pred]
    `(add-chinfo! (str '~chname) (fn [~arg] ~(concat pred (list arg))))))
 
+(defch chAgent      (instance?      clojure.lang.Agent))
+(defch chAtom       (instance?       clojure.lang.Atom))
 (defch chASeq       (instance?       clojure.lang.ASeq))
 (defch chBoolean    (instance?                 Boolean))
+(defch chDeref      (instance?     clojure.lang.IDeref))
 (defch chDouble     (instance?                  Double))
 (defch chIndexed    (instance?    clojure.lang.Indexed))
 (defch chLazy       (instance?    clojure.lang.LazySeq))
 (defch chLong       (instance?                    Long))
 (defch chLookup     (instance?    clojure.lang.ILookup))
+(defch chRef        (instance?        clojure.lang.Ref))
 (defch chSeqable    (instance?    clojure.lang.Seqable))
 (defch chSequential (instance? clojure.lang.Sequential))
 
@@ -71,36 +80,67 @@
 (defch chVar               (var?))
 (defch chVec            (vector?))
 
+(defch chJavaColl (instance? java.util.Collection))
+(defch chJavaList (instance?       java.util.List))
+(defch chJavaMap  (instance?        java.util.Map))
+(defch chJavaSet  (instance?        java.util.Set))
+
 (defn chinfos
   [x]
   (chSet (->> @chinfos-state
               (filter (fn [[_ pred]] (pred x)))
               (map first)
-              set)))
+              (apply sorted-set))))
 
 (defn chcommons
   [& xs]
-  (chSet (apply cset/intersection (map chinfos xs))))
+  (chSet (->> xs (map chinfos) (apply cset/intersection))))
 
 (defn chdiffs
   [& xs]
-  (chSet (apply cset/difference (map chinfos xs))))
+  (chSet (->> xs (map chinfos) (apply cset/difference))))
+
+;; ARBITRARY CHECK, MAYBE CHECK
+
+(defn ch
+  ([c] #(ch c %))
+
+  ([c x]
+   (assert (instance? c x)
+           (if (not-nil? x)
+             (str "Illegal value " x ", " (class x) ", expected " c)
+             (str "Illegal nil value, expected "                  c)))
+   x))
+
+(defn maybe
+  [check x]
+  (when-not (nil? x) (check x)) x)
+
+;; CONSTRUCTORS
+
+(deftype           PosLong [^long uncons])
+(defch           chPosLong (instance? PosLong))
+(defn ^PosLong consPosLong [^long n] (assert (p/> n 0)) (PosLong. n))
+
+(deftype           NatLong [^long uncons])
+(defch           chNatLong (instance? NatLong))
+(defn ^NatLong consNatLong [^long n] (assert (p/>= n 0)) (NatLong. n))
 
 ;; SYS/JVM
 
 (defn room
   []
-  (let [free-memory  (.. Runtime getRuntime freeMemory)
+  (let [free-memory  (.. Runtime getRuntime  freeMemory)
         total-memory (.. Runtime getRuntime totalMemory)
-        max-memory   (.. Runtime getRuntime maxMemory)
+        max-memory   (.. Runtime getRuntime   maxMemory)
         used-memory  (- total-memory free-memory)
 
         scale (fn [arg] (double (/ arg (* 1024 1024))))]
 
-    (printf "Used  memory : %f MB\n" (scale used-memory))
-    (printf "Free  memory : %f MB\n" (scale free-memory))
+    (printf "Used  memory : %f MB\n" (scale  used-memory))
+    (printf "Free  memory : %f MB\n" (scale  free-memory))
     (printf "Total memory : %f MB\n" (scale total-memory))
-    (printf "Max   memory : %f MB\n" (scale max-memory))))
+    (printf "Max   memory : %f MB\n" (scale   max-memory))))
 
 (defn gc
   ([]
@@ -251,31 +291,47 @@
           :else                KleeneUndefined)))
 
 (defmacro Kleene-and
-  ([] KleeneTrue)
+  ([]  `(chKleene KleeneTrue))
   ([x] `(chKleene ~x))
   ([x & xs]
-   `(let [x# (chKleene ~x)]
-      (cond (ref= KleeneFalse x#) KleeneFalse
-            (ref= KleeneTrue  x#) (Kleene-and ~@xs)
-            :else ;; KleeneUndefined
-            (if (ref= KleeneFalse (Kleene-and ~@xs))
-              KleeneFalse
-              KleeneUndefined)))))
+   `(chKleene
+     (let [x# (chKleene ~x)]
+       (cond (ref= KleeneFalse x#) KleeneFalse
+             (ref= KleeneTrue  x#) (Kleene-and ~@xs)
+
+             :else ;; KleeneUndefined
+             (if (ref= KleeneFalse (Kleene-and ~@xs))
+               KleeneFalse
+               KleeneUndefined))))))
 
 (defmacro Kleene-or
-  ([]  KleeneFalse)
+  ([]  `(chKleene KleeneFalse))
   ([x] `(chKleene ~x))
   ([x & xs]
    `(let [x# (chKleene ~x)]
-      (cond (ref= KleeneTrue  x#) KleeneTrue
-            (ref= KleeneFalse x#) (Kleene-or ~@xs)
-            :else ;; KleeneUndefined
-            (if (ref= KleeneTrue (Kleene-or ~@xs))
-              KleeneTrue
-              KleeneUndefined)))))
+      (chKleene (cond (ref= KleeneTrue  x#) KleeneTrue
+                      (ref= KleeneFalse x#) (Kleene-or ~@xs)
 
-;; ;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
-;; ;; FOR MORE SEE clongra.search
+                      :else ;; KleeneUndefined
+                      (if (ref= KleeneTrue (Kleene-or ~@xs))
+                        KleeneTrue
+                        KleeneUndefined))))))
+
+;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
+;; FOR MORE SEE clongra.search
+
+(defn breadth-first-combiner
+  [nodes new-nodes]
+  (chSeq (lazy-cat (chSeq nodes) (chSeq new-nodes))))
+
+(defn depth-first-combiner
+  [nodes new-nodes]
+  (chSeq (lazy-cat (chSeq new-nodes) (chSeq nodes))))
+
+;; (defn tree-search
+;;   [start goal? adjs combiner]
+;;   (loop [nodes (list start)]
+;;     (when (seq (chSeq nodes)))))
 
 ;; (defn tree-search
 ;;   ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
@@ -294,16 +350,6 @@
 ;;                goal?
 ;;                adjacent
 ;;                combiner)))))
-
-;; (defn depth-first-combiner ;:- (a) -> (a) -> (a)
-;;   "The combiner for the depth-first-search."
-;;   [new-nodes states]
-;;   (lazy-cat new-nodes states))
-
-;; (defn breadth-first-combiner ;:- (a) -> (a) -> (a)
-;;   "The combiner for the breadth-first-search."
-;;   [new-nodes states]
-;;   (lazy-cat states new-nodes))
 
 ;; (defn breadth-first-tree-levels
 ;;   ;;:- a -> (a -> (a)) -> ((a))
@@ -330,12 +376,12 @@
 
 ;; RANDOM UTILS
 
+(defch chRandom  (instance?       java.util.Random))
+(defch chRandist (instance? kongra.prelude.Randist))
+
 (defn uuid!
   []
   (chString (.. java.util.UUID randomUUID toString)))
-
-(defch chRandom  (instance?       java.util.Random))
-(defch chRandist (instance? kongra.prelude.Randist))
 
 (defn make-MersenneTwister
   [^long seed]
@@ -348,40 +394,13 @@
 
 (defn ^kongra.prelude.Randist randist
   []
-  (chRandist @randist-state))
+  (chRandist (deref (chAtom randist-state))))
 
 (defn set-seed!
   [^long seed]
-  (reset! randist-state (kongra.prelude.Randist. (make-MersenneTwister seed))))
+  (reset! (chAtom randist-state)
+          (kongra.prelude.Randist.(chRandom (make-MersenneTwister seed)))))
 
 (defmacro randgen!
   [method & args]
   `(~method (randist) ~@args))
-
-;; (defn t1 [x]
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x)
-;;   (chLong x))
-
-;; (defn foo [x] (chString x))
-
-;; (defn t2
-;;   []
-;;   (dotimes [i 1000000] (chString (foo "aaa"))))
