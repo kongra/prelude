@@ -1,4 +1,4 @@
 #! /bin/bash
 
 rm -rf target/
-lein jar
+lein uberjar
