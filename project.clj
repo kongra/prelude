@@ -7,43 +7,16 @@
   :dependencies     [[org.clojure/clojure                  "1.8.0"]
                      [primitive-math                       "0.1.5"]
                      [org.apache.commons/commons-lang3       "3.4"]
-                     [org.uncommons.maths/uncommons-maths "1.2.2a"]
+                     [org.uncommons.maths/uncommons-maths "1.2.2a"]]
 
-                     ;; FOR DEV. PURPOSES ONLY
-                     [criterium           "0.4.4"]]
+  :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
 
-  ;; FOR DEV. PURPOSES ONLY
-  :plugins          [[cider/cider-nrepl  "0.13.0"]
-                     [lein-nodisassemble  "0.1.3"]]
+  :aot               :all
 
-  :main          kongra.prelude
-  :aot           :all
-
-  :source-paths      ["src/clj"]
+  :source-paths      ["src/clj" "test"]
   :java-source-paths ["src/java"]
+  :test-paths        ["test"    ]
 
   :global-vars       {*warn-on-reflection* true
-                      *print-length*       500}
-
-  :jvm-opts          ["-server"
-                      "-d64"
-                      "-Dclojure.compiler.direct-linking=true"
-
-                      "-Xshare:off"
-                      "-XX:+AggressiveOpts"
-                      "-XX:+DoEscapeAnalysis"
-                      "-XX:+UseCompressedOops"
-                      ;; "-XX:+UseNUMA" ;; to check: numactl --hardware
-
-                      "-Xms1G"
-                      "-Xmx1G"
-
-                      "-XX:+UseParallelGC"
-                      "-XX:+UseParallelOldGC"
-                      "-XX:NewSize=400m"
-                      "-XX:MaxNewSize=400m"
-                      "-XX:-UseAdaptiveSizePolicy"
-                      "-XX:SurvivorRatio=6"
-
-                      "-XX:+PrintGCDetails"
-                      "-XX:+PrintGCTimeStamps"])
+                      *assert*             true
+                      *print-length*       500} )
