@@ -13,14 +13,42 @@
       (str "Illegal value " x " of type " (.getName (class x)))))
 
 ;; NAME+PRED → CH
-(defmacro defch {:style/indent 1}
-  ([chname pred] `(defch ~chname x# ~pred))
+(defmacro ch {:style/indent 1}
+  ([pred   x]
+   (let [x'   (gensym "x__")
+         expr (seq (conj (vec pred) x'))]
+     `(let [~x' ~x] (assert ~expr (chmsg ~x')) ~x')))
 
+  ([pred _ x] ; as-pred
+   (let [expr (seq (conj (vec pred) x))]
+     `(boolean ~expr))))
+
+(defmacro defch {:style/indent 1}
+  ([chname     pred] `(defch ~chname x# ~pred))
   ([chname arg pred]
-   (let [expr (seq (conj (vec pred) arg))]
-     `(defn ~chname
-        ([~arg    ] (assert  ~expr (chmsg ~arg)) ~arg)
-        ([~'_ ~arg] (boolean ~expr))))))
+   `(defn ~chname
+      ([~arg    ] (ch ~pred                ~arg))
+      ([~'_ ~arg] (ch ~pred #_ as-pred nil ~arg)))))
+
+;; CLASS → CH
+(defmacro chc {:style/indent 1}
+  ([c   x] `(ch (instance? ~c)                ~x))
+  ([c _ x] `(ch (instance? ~c) #_ as-pred nil ~x)))
+
+(defmacro defchc {:style/indent 1}
+  [chname c]
+  `(defch ~chname (chc ~c #_ as-pred nil)))
+
+(defmacro chLike {:style/indent 1}
+  ([y   x] `(chc (class ~y)                ~x))
+  ([y _ x] `(chc (class ~y) #_ as-pred nil ~x)))
+
+;; UNIT (NIL)
+(defch chUnit (nil?))
+
+;; NON-UNIT (NOT NIL)
+(declare      not-nil?)
+(defch chObj (not-nil?))
 
 ;; CO-PRODUCT (DISCRIMINATED UNION)
 (defmacro ch| {:style/indent 1}
@@ -28,44 +56,54 @@
    (assert (vector?        chs))
    (assert (seq            chs))
    (assert (every? symbol? chs))
-   (let [x'       (gensym "x")
-         pred-chs (map (fn [ch] `(~ch nil ~x')) (butlast chs))
-         ch       (list (last chs) x')]
-     `(let [~x' ~x] (when-not (or ~@pred-chs) ~ch) ~x')))
+   (let [x'       (gensym "x__")
+         pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) (butlast chs))
+         ch       (list (last chs) x')
+         n        (count pred-chs)]
+
+     (cond (zero? 0) `(let [~x' ~x] ~ch)
+           (= n   1) `(let [~x' ~x] (when-not ~(first pred-chs) ~ch) ~x')
+           :else     `(let [~x' ~x] (when-not (or ~@pred-chs)   ~ch) ~x'))))
 
   ([chs _ x]
    (assert (vector?        chs))
    (assert (seq            chs))
    (assert (every? symbol? chs))
    (let [x'       (gensym "x")
-         pred-chs (map (fn [ch] `(~ch nil ~x')) chs)]
-     `(let [~x' ~x] (or ~@pred-chs)))))
+         pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) chs)
+         n        (count pred-chs)]
 
-(defch chUnit (nil?))
+     (if (= n 1)
+       `(let [~x' ~x] ~(first pred-chs))
+       `(let [~x' ~x] (or ~@pred-chs))))))
+;; aliasing like: (defch chABC (ch| [chA chB chC] #_ as-pred nil)
 
-(defmacro defchc {:style/indent 1}
-  [chname c]
-  `(defch ~chname (instance? ~c)))
-
+;; MAYBE
 (defmacro chMaybe {:style/indent 1}
-  ([ch   x] `(ch| [chUnit ~ch]     ~x))
-  ([ch _ x] `(ch| [chUnit ~ch] nil ~x)))
+  ([ch   x] `(ch| [chUnit ~ch]                ~x))
+  ([ch _ x] `(ch| [chUnit ~ch] #_ as-pred nil ~x)))
+;; aliasing like: (defch chMaybeA (chMaybe chA #_ as-pred nil)
 
+;; EITHER
 (defmacro chEither {:style/indent 1}
-  ([chl chr   x] `(ch| [~chl ~chr]     ~x))
-  ([chl chr _ x] `(ch| [~chl ~chr] nil ~x)))
+  ([chl chr   x] `(ch| [~chl ~chr]                ~x))
+  ([chl chr _ x] `(ch| [~chl ~chr] #_ as-pred nil ~x)))
+;; aliasing like: (defch chEitherAB (chEither chA chB #_ as-pred nil)
 
+;; CHS REGISTRY
 (def ^:private CHS (atom {}))
 
 (defn regch*
   [chname ch]
-  (assert (string? chname))
-  (assert (fn?         ch))
-  (swap! CHS
-         (fn [m]
-           (when (m chname)
-             (println "WARNING: chname already in use:" chname))
-           (assoc m chname ch))))
+  (chUnit
+   (do
+     (assert (string? chname))
+     (assert (fn?         ch))
+     (swap! CHS
+            (fn [m]
+              (when (m chname)
+                (println "WARNING: chname already in use:" chname))
+              (assoc m chname ch))) nil)))
 
 (defmacro regch
   [ch]
@@ -77,7 +115,7 @@
 (defn chs
   ([x]
    (chSet (->> @CHS
-               (filter (fn [[_ pred]] (pred nil x)))
+               (filter (fn [[_ pred]] (pred #_as-pred nil x)))
                (map first)
                (apply sorted-set))))
   ([x & xs]
@@ -88,7 +126,6 @@
   (chSet (->> xs (map chs) (apply cset/difference))))
 
 ;; COMMON CHS
-
 (defchc chAgent           clojure.lang.Agent) (regch      chAgent)
 (defchc chAtom             clojure.lang.Atom) (regch       chAtom)
 (defchc chASeq             clojure.lang.ASeq) (regch       chASeq)
@@ -138,7 +175,6 @@
 (defchc chJavaSet              java.util.Set) (regch    chJavaSet)
 
 ;; INTEGRAL CHS/CONSTRS
-
 (deftype           PosLong [^long uncons])
 (defchc          chPosLong PosLong)
 (defn ^PosLong consPosLong [^long n] (assert (p/> n 0)) (PosLong. n))
@@ -151,25 +187,27 @@
 
 (defn room
   []
-  (let [free-memory  (.. Runtime getRuntime  freeMemory)
-        total-memory (.. Runtime getRuntime totalMemory)
-        max-memory   (.. Runtime getRuntime   maxMemory)
-        used-memory  (- total-memory free-memory)
+  (chUnit
+   (let [free-memory  (.. Runtime getRuntime  freeMemory)
+         total-memory (.. Runtime getRuntime totalMemory)
+         max-memory   (.. Runtime getRuntime   maxMemory)
+         used-memory  (- total-memory free-memory)
 
-        scale (fn [arg] (double (/ arg (* 1024 1024))))]
+         scale (fn [arg] (double (/ arg (* 1024 1024))))]
 
-    (printf "Used  memory : %f MB\n" (scale  used-memory))
-    (printf "Free  memory : %f MB\n" (scale  free-memory))
-    (printf "Total memory : %f MB\n" (scale total-memory))
-    (printf "Max   memory : %f MB\n" (scale   max-memory))))
+     (printf "Used  memory : %f MB\n" (scale  used-memory))
+     (printf "Free  memory : %f MB\n" (scale  free-memory))
+     (printf "Total memory : %f MB\n" (scale total-memory))
+     (printf "Max   memory : %f MB\n" (scale   max-memory)))))
 
 (defn gc
   ([]
-   (gc true))
+   (chUnit (gc true)))
 
   ([verbose?]
-   (System/gc)
-   (when (chBoolean verbose?) (room))))
+   (chUnit
+    (do (System/gc)
+        (when (chBoolean verbose?) (room))))))
 
 (defmacro with-out-systemout
   [& body]
@@ -193,10 +231,12 @@
 
 (defn blank?
   [s]
+  (chMaybe chString s)
   (chBoolean (org.apache.commons.lang3.StringUtils/isBlank s)))
 
 (defn not-blank?
   [s]
+  (chMaybe chString s)
   (chBoolean (not (blank? s))))
 
 (defn indent-string
@@ -260,10 +300,10 @@
 (defn vec-remove
   "Returns a vector that is a result of removing n-th element from the
   vector v."
-  [^Long n v]
+  [^long n v]
   (chVec v)
   (chVec (vec (concat (subvec v 0 n)
-                      (subvec v (p/inc (.longValue n)))))))
+                      (subvec v (p/inc n))))))
 
 (defn make-longs ^longs
   {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
@@ -308,10 +348,11 @@
 
 (defn Kleene-not ;:- Kleene -> Kleene
   [x]
-  (let [x (chKleene x)]
-    (cond (ref= KleeneTrue  x) KleeneFalse
-          (ref= KleeneFalse x) KleeneTrue
-          :else                KleeneUndefined)))
+  (chKleene
+   (let [x (chKleene x)]
+     (cond (ref= KleeneTrue  x) KleeneFalse
+           (ref= KleeneFalse x) KleeneTrue
+           :else                KleeneUndefined))))
 
 (defmacro Kleene-and
   ([]  `(chKleene KleeneTrue))
@@ -331,75 +372,76 @@
   ([]  `(chKleene KleeneFalse))
   ([x] `(chKleene ~x))
   ([x & xs]
-   `(let [x# (chKleene ~x)]
-      (chKleene (cond (ref= KleeneTrue  x#) KleeneTrue
-                      (ref= KleeneFalse x#) (Kleene-or ~@xs)
+   `(chKleene
+     (let [x# (chKleene ~x)]
+       (cond (ref= KleeneTrue  x#) KleeneTrue
+             (ref= KleeneFalse x#) (Kleene-or ~@xs)
 
-                      :else ;; KleeneUndefined
-                      (if (ref= KleeneTrue (Kleene-or ~@xs))
-                        KleeneTrue
-                        KleeneUndefined))))))
+             :else ;; KleeneUndefined
+             (if (ref= KleeneTrue (Kleene-or ~@xs))
+               KleeneTrue
+               KleeneUndefined))))))
 
-;; ;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
-;; ;; FOR MORE SEE clongra.search
+;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
+;; FOR MORE SEE clongra.search
 
-;; (defn breadth-first-combiner
-;;   [nodes new-nodes]
-;;   (chSeq (lazy-cat (chSeq nodes) (chSeq new-nodes))))
+(defn breadth-first-combiner
+  [nodes new-nodes]
+  (chSeq (lazy-cat (chSeq nodes) (chSeq new-nodes))))
 
-;; (defn depth-first-combiner
-;;   [nodes new-nodes]
-;;   (chSeq (lazy-cat (chSeq new-nodes) (chSeq nodes))))
+(defn depth-first-combiner
+  [nodes new-nodes]
+  (chSeq (lazy-cat (chSeq new-nodes) (chSeq nodes))))
 
-;; ;; (defn tree-search
-;; ;;   [start goal? adjs combiner]
-;; ;;   (loop [nodes (list start)]
-;; ;;     (when (seq (chSeq nodes)))))
+;; (defn tree-search
+;;   [start goal? adjs combiner]
+;;   (loop [nodes (list start)]
+;;     (when (seq (chSeq nodes)))))
 
-;; ;; (defn tree-search
-;; ;;   ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
-;; ;;   "Searches state-spaces that have the form of trees. Starts with
-;; ;;   a sequence of states and performs the search according to the
-;; ;;   goal? predicate, generator of nodes adjacent do a given node
-;; ;;   and combiner responsible of adding nodes to the search
-;; ;;   collection of nodes."
-;; ;;   [states goal? adjacent combiner]
-;; ;;   (when (seq states)
-;; ;;     (let [obj (first states)]
-;; ;;       (if (goal? obj)
-;; ;;         obj
+;; (defn tree-search
+;;   ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
+;;   "Searches state-spaces that have the form of trees. Starts with
+;;   a sequence of states and performs the search according to the
+;;   goal? predicate, generator of nodes adjacent do a given node
+;;   and combiner responsible of adding nodes to the search
+;;   collection of nodes."
+;;   [states goal? adjacent combiner]
+;;   (when (seq states)
+;;     (let [obj (first states)]
+;;       (if (goal? obj)
+;;         obj
 
-;; ;;         (recur (combiner (adjacent obj) (rest states))
-;; ;;                goal?
-;; ;;                adjacent
-;; ;;                combiner)))))
+;;         (recur (combiner (adjacent obj) (rest states))
+;;                goal?
+;;                adjacent
+;;                combiner)))))
 
-;; ;; (defn breadth-first-tree-levels
-;; ;;   ;;:- a -> (a -> (a)) -> ((a))
-;; ;;   "Returns a lazy collection of lazy sequences of nodes belonging
-;; ;;   to subsequent tree levels."
-;; ;;   [start adjacent]
-;; ;;   (->> (list start)
-;; ;;        (iterate #(mapcat adjacent %))
-;; ;;        (take-while seq)))
+;; (defn breadth-first-tree-levels
+;;   ;;:- a -> (a -> (a)) -> ((a))
+;;   "Returns a lazy collection of lazy sequences of nodes belonging
+;;   to subsequent tree levels."
+;;   [start adjacent]
+;;   (->> (list start)
+;;        (iterate #(mapcat adjacent %))
+;;        (take-while seq)))
 
-;; ;; (defn breadth-first-tree-seq
-;; ;;   "Returns a lazy sequence of tree nodes starting with the passed
-;; ;;   start node where adjacent is a function generating nodes
-;; ;;   adjacent to it's argument.
+;; (defn breadth-first-tree-seq
+;;   "Returns a lazy sequence of tree nodes starting with the passed
+;;   start node where adjacent is a function generating nodes
+;;   adjacent to it's argument.
 
-;; ;;   Goes on infinitely unless the limiting depth specified."
-;; ;;   ([start adjacent] ;:- a -> (a -> (a)) -> (a)
-;; ;;      (apply concat (breadth-first-tree-levels start adjacent)))
+;;   Goes on infinitely unless the limiting depth specified."
+;;   ([start adjacent] ;:- a -> (a -> (a)) -> (a)
+;;      (apply concat (breadth-first-tree-levels start adjacent)))
 
-;; ;;   ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
-;; ;;      (->> (breadth-first-tree-levels start adjacent)
-;; ;;           (take depth)
-;; ;;           (reduce concat))))
+;;   ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
+;;      (->> (breadth-first-tree-levels start adjacent)
+;;           (take depth)
+;;           (reduce concat))))
 
 ;; RANDOM UTILS
 
-(defchc chRandom        java.util.Random)
+(defchc chRandom        java.util.Random) (regch chRandom)
 (defchc chRandist kongra.prelude.Randist)
 
 (defn uuid!
@@ -421,8 +463,10 @@
 
 (defn set-seed!
   [^long seed]
-  (reset! (chAtom randist-state)
-          (kongra.prelude.Randist.(chRandom (make-MersenneTwister seed)))))
+  (chUnit
+   (do (reset! (chAtom randist-state)
+               (kongra.prelude.Randist.(chRandom (make-MersenneTwister seed))))
+       nil)))
 
 (defmacro randgen!
   [method & args]
