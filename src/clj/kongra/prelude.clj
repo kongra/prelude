@@ -53,9 +53,8 @@
 ;; CO-PRODUCT (DISCRIMINATED UNION)
 (defmacro ch| {:style/indent 1}
   ([chs x]
-   (assert (vector?        chs))
-   (assert (seq            chs))
-   (assert (every? symbol? chs))
+   (assert (vector? chs))
+   (assert (seq     chs))
    (let [x'       (gensym "x__")
          pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) (butlast chs))
          ch       (list (last chs) x')
@@ -66,9 +65,8 @@
            :else     `(let [~x' ~x] (when-not (or ~@pred-chs)   ~ch) ~x'))))
 
   ([chs _ x]
-   (assert (vector?        chs))
-   (assert (seq            chs))
-   (assert (every? symbol? chs))
+   (assert (vector? chs))
+   (assert (seq     chs))
    (let [x'       (gensym "x")
          pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) chs)
          n        (count pred-chs)]
