@@ -12,6 +12,7 @@
 (defch chMaybeA      (chMaybe  chA        #_ as-pred nil))
 (defch chEitherAUnit (chEither chA chUnit #_ as-pred nil))
 (defch chEitherAB    (chEither chA chB    #_ as-pred nil))
+(defch chABC         (ch| [chA chB chC]   #_ as-pred nil))
 
 (deftest ch-test
   (testing "(ch ...)"
@@ -115,8 +116,69 @@
     (is (false?  (chEitherAB    #_ as-pred nil (C.))))
     (is (false?  (chEitherAB    #_ as-pred nil nil))))
 
-  (testing "(ch| ...)")
+  (testing "(ch| ...)"
+    (is                         (ch| [chA chB chC]   (A.)))
+    (is                         (ch| [chA chB chC]   (B.)))
+    (is                         (ch| [chA chB chC]   (C.)))
+    (is (thrown? AssertionError (ch| [chA chB chC]   nil)))
+    (is (thrown? AssertionError (ch| [chA chB chC] "aaa")))
+    (is (thrown? AssertionError (ch| [chA chB chC]     1)))
 
-  (testing "(ch| ...) with (defch ...)"))
+    (is (true?   (ch| [chA chB chC] #_ as-pred nil  (A.))))
+    (is (true?   (ch| [chA chB chC] #_ as-pred nil  (B.))))
+    (is (true?   (ch| [chA chB chC] #_ as-pred nil  (C.))))
+    (is (false?  (ch| [chA chB chC] #_ as-pred nil   nil)))
+    (is (false?  (ch| [chA chB chC] #_ as-pred nil "aaa")))
+    (is (false?  (ch| [chA chB chC] #_ as-pred nil     1)))
+
+    (is                         (ch| [chA chC chB]   (A.)))
+    (is                         (ch| [chA chC chB]   (B.)))
+    (is                         (ch| [chA chC chB]   (C.)))
+    (is (thrown? AssertionError (ch| [chA chC chB]   nil)))
+    (is (thrown? AssertionError (ch| [chA chC chB] "aaa")))
+    (is (thrown? AssertionError (ch| [chA chC chB]     1)))
+
+    (is                         (ch| [chB chA chC]   (A.)))
+    (is                         (ch| [chB chA chC]   (B.)))
+    (is                         (ch| [chB chA chC]   (C.)))
+    (is (thrown? AssertionError (ch| [chB chA chC]   nil)))
+    (is (thrown? AssertionError (ch| [chB chA chC] "aaa")))
+    (is (thrown? AssertionError (ch| [chB chA chC]     1)))
+
+    (is                         (ch| [chB chC chA]   (A.)))
+    (is                         (ch| [chB chC chA]   (B.)))
+    (is                         (ch| [chB chC chA]   (C.)))
+    (is (thrown? AssertionError (ch| [chB chC chA]   nil)))
+    (is (thrown? AssertionError (ch| [chB chC chA] "aaa")))
+    (is (thrown? AssertionError (ch| [chB chC chA]     1)))
+
+    (is                         (ch| [chC chA chB]   (A.)))
+    (is                         (ch| [chC chA chB]   (B.)))
+    (is                         (ch| [chC chA chB]   (C.)))
+    (is (thrown? AssertionError (ch| [chC chA chB]   nil)))
+    (is (thrown? AssertionError (ch| [chC chA chB] "aaa")))
+    (is (thrown? AssertionError (ch| [chC chA chB]     1)))
+
+    (is                         (ch| [chC chB chA]   (A.)))
+    (is                         (ch| [chC chB chA]   (B.)))
+    (is                         (ch| [chC chB chA]   (C.)))
+    (is (thrown? AssertionError (ch| [chC chB chA]   nil)))
+    (is (thrown? AssertionError (ch| [chC chB chA] "aaa")))
+    (is (thrown? AssertionError (ch| [chC chB chA]    1))))
+
+  (testing "(ch| ...) with (defch ...)"
+    (is                         (chABC   (A.)))
+    (is                         (chABC   (B.)))
+    (is                         (chABC   (C.)))
+    (is (thrown? AssertionError (chABC   nil)))
+    (is (thrown? AssertionError (chABC "aaa")))
+    (is (thrown? AssertionError (chABC     1)))
+
+    (is (true?   (chABC #_ as-pred nil  (A.))))
+    (is (true?   (chABC #_ as-pred nil  (B.))))
+    (is (true?   (chABC #_ as-pred nil  (C.))))
+    (is (false?  (chABC #_ as-pred nil   nil)))
+    (is (false?  (chABC #_ as-pred nil "aaa")))
+    (is (false?  (chABC #_ as-pred nil   1)))))
 
 (time (run-tests))
