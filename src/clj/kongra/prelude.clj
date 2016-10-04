@@ -19,29 +19,39 @@
          expr (seq (conj (vec pred) x'))]
      `(let [~x' ~x] (assert ~expr (chmsg ~x')) ~x')))
 
-  ([pred _ x] ; as-pred
+  ([pred #_ as-pred _ x]
    (let [expr (seq (conj (vec pred) x))]
      `(boolean ~expr))))
+
+(defmacro chp
+  "Turns a (ch ...)-like form into a predicate. Applies the predicate
+  when passed an argument."
+  {:style/indent 1}
+  ([form] ;; WARNING: USE ONLY WITHIN (defch ...)
+   (seq (conj (vec form) #_ as-pred nil)))
+
+  ([form x]
+   (seq (conj (vec form) #_ as-pred nil x))))
 
 (defmacro defch {:style/indent 1}
   ([chname     pred] `(defch ~chname x# ~pred))
   ([chname arg pred]
    `(defn ~chname
-      ([~arg    ] (ch ~pred                ~arg))
-      ([~'_ ~arg] (ch ~pred #_ as-pred nil ~arg)))))
+      ([~arg    ]      (ch ~pred  ~arg))
+      ([~'_ ~arg] (chp (ch ~pred) ~arg)))))
 
 ;; CLASS → CH
 (defmacro chc {:style/indent 1}
-  ([c   x] `(ch (instance? ~c)                ~x))
-  ([c _ x] `(ch (instance? ~c) #_ as-pred nil ~x)))
+  ([c   x] `     (ch (instance? ~c)  ~x))
+  ([c _ x] `(chp (ch (instance? ~c)) ~x)))
 
 (defmacro defchc {:style/indent 1}
   [chname c]
-  `(defch ~chname (chc ~c #_ as-pred nil)))
+  `(defch ~chname (chp (chc ~c))))
 
 (defmacro chLike {:style/indent 1}
-  ([y   x] `(chc (class ~y)                ~x))
-  ([y _ x] `(chc (class ~y) #_ as-pred nil ~x)))
+  ([y   x] `     (chc (class ~y)  ~x))
+  ([y _ x] `(chp (chc (class ~y)) ~x)))
 
 ;; UNIT (NIL)
 (defch chUnit (nil?))
@@ -53,10 +63,11 @@
 ;; CO-PRODUCT (DISCRIMINATED UNION)
 (defmacro ch| {:style/indent 1}
   ([chs x]
-   (assert (vector? chs))
-   (assert (seq     chs))
+   (assert (vector? chs)        "Must be a chs vector in (ch| ...)")
+   (assert (seq     chs)        "(ch| ...) must contain some chs"  )
+   (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
    (let [x'       (gensym "x__")
-         pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) (butlast chs))
+         pred-chs (map (fn [ch] `(chp (~ch) ~x')) (butlast chs))
          ch       (list (last chs) x')
          n        (count pred-chs)]
 
@@ -65,28 +76,26 @@
            :else     `(let [~x' ~x] (when-not (or ~@pred-chs)   ~ch) ~x'))))
 
   ([chs _ x]
-   (assert (vector? chs))
-   (assert (seq     chs))
+   (assert (vector? chs)        "Must be a chs vector in (ch| ...)")
+   (assert (seq     chs)        "(ch| ...) must contain some chs"  )
+   (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
    (let [x'       (gensym "x")
-         pred-chs (map (fn [ch] `(~ch #_ as-pred nil ~x')) chs)
+         pred-chs (map (fn [ch] `(chp (~ch) ~x')) chs)
          n        (count pred-chs)]
 
      (if (= n 1)
        `(let [~x' ~x] ~(first pred-chs))
        `(let [~x' ~x] (or ~@pred-chs))))))
-;; aliasing like: (defch chABC (ch| [chA chB chC] #_ as-pred nil)
 
 ;; MAYBE
 (defmacro chMaybe {:style/indent 1}
-  ([ch   x] `(ch| [chUnit ~ch]                ~x))
-  ([ch _ x] `(ch| [chUnit ~ch] #_ as-pred nil ~x)))
-;; aliasing like: (defch chMaybeA (chMaybe chA #_ as-pred nil)
+  ([ch   x] `     (ch| [chUnit ~ch]  ~x))
+  ([ch _ x] `(chp (ch| [chUnit ~ch]) ~x)))
 
 ;; EITHER
 (defmacro chEither {:style/indent 1}
-  ([chl chr   x] `(ch| [~chl ~chr]                ~x))
-  ([chl chr _ x] `(ch| [~chl ~chr] #_ as-pred nil ~x)))
-;; aliasing like: (defch chEitherAB (chEither chA chB #_ as-pred nil)
+  ([chl chr   x] `     (ch| [~chl ~chr]  ~x))
+  ([chl chr _ x] `(chp (ch| [~chl ~chr]) ~x)))
 
 ;; CHS REGISTRY
 (def ^:private CHS (atom {}))
@@ -111,9 +120,11 @@
 (declare chSet)
 
 (defn chs
+  ([] (chSet (apply sorted-set (sort (keys @CHS)))))
+
   ([x]
    (chSet (->> @CHS
-               (filter (fn [[_ pred]] (pred #_as-pred nil x)))
+               (filter (fn [[_ pred]] (chp (pred) x)))
                (map first)
                (apply sorted-set))))
   ([x & xs]

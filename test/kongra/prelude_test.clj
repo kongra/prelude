@@ -9,25 +9,25 @@
 (deftype B []) (defchc chB B)
 (deftype C []) (defchc chC C)
 
-(defch chMaybeA      (chMaybe  chA        #_ as-pred nil))
-(defch chEitherAUnit (chEither chA chUnit #_ as-pred nil))
-(defch chEitherAB    (chEither chA chB    #_ as-pred nil))
-(defch chABC         (ch| [chA chB chC]   #_ as-pred nil))
+(defch chMaybeA      (chp (chMaybe  chA       )))
+(defch chEitherAUnit (chp (chEither chA chUnit)))
+(defch chEitherAB    (chp (chEither chA    chB)))
+(defch chABC         (chp (ch| [chA chB chC]  )))
 
 (deftest ch-test
   (testing "(ch ...)"
-    (is (thrown? AssertionError (ch (nil?)                    1)))
-    (is (nil?                   (ch (nil?)                  nil)))
-    (is (false?                 (ch (nil?) #_ as-pred nil     1)))
-    (is (true?                  (ch (nil?) #_ as-pred nil  nil))))
+    (is (thrown? AssertionError      (ch  (nil?)     1)))
+    (is (nil?                        (ch  (nil?)   nil)))
+    (is (false?                 (chp (ch  (nil?))    1)))
+    (is (true?                  (chp (ch  (nil?)) nil))))
 
   (testing "(chc ...)"
-    (is (= ""                   (chc String                  "")))
-    (is (thrown? AssertionError (chc String                   1)))
-    (is (thrown? AssertionError (chc String                 nil)))
-    (is (true?                  (chc String #_ as-pred nil   "")))
-    (is (false?                 (chc String #_ as-pred nil    1)))
-    (is (false?                 (chc String #_ as-pred nil nil))))
+    (is (= ""                        (chc String    "")))
+    (is (thrown? AssertionError      (chc String     1)))
+    (is (thrown? AssertionError      (chc String   nil)))
+    (is (true?                  (chp (chc String)   "")))
+    (is (false?                 (chp (chc String)    1)))
+    (is (false?                 (chp (chc String) nil))))
 
   (testing "(defchc ...)"
     (is (chA (A.)))
