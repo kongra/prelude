@@ -47,8 +47,8 @@
 (defch chUnit (nil?))
 
 ;; NON-UNIT (NOT NIL)
-(declare      not-nil?)
-(defch chObj (not-nil?))
+(declare       not-nil?)
+(defch chSome (not-nil?))
 
 ;; CO-PRODUCT (DISCRIMINATED UNION)
 (defmacro ch| {:style/indent 1}
@@ -60,7 +60,7 @@
          ch       (list (last chs) x')
          n        (count pred-chs)]
 
-     (cond (zero? 0) `(let [~x' ~x] ~ch)
+     (cond (zero? n) `(let [~x' ~x] ~ch)
            (= n   1) `(let [~x' ~x] (when-not ~(first pred-chs) ~ch) ~x')
            :else     `(let [~x' ~x] (when-not (or ~@pred-chs)   ~ch) ~x'))))
 

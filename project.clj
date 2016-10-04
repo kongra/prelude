@@ -19,4 +19,6 @@
 
   :global-vars       {*warn-on-reflection* true
                       *assert*             true
-                      *print-length*       500} )
+                      *print-length*       500}
+
+  :pedantic?         :warn)

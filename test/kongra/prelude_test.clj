@@ -9,6 +9,10 @@
 (deftype B []) (defchc chB B)
 (deftype C []) (defchc chC C)
 
+(defch chMaybeA      (chMaybe  chA        #_ as-pred nil))
+(defch chEitherAUnit (chEither chA chUnit #_ as-pred nil))
+(defch chEitherAB    (chEither chA chB    #_ as-pred nil))
+
 (deftest ch-test
   (testing "(ch ...)"
     (is (thrown? AssertionError (ch (nil?)                    1)))
@@ -50,20 +54,66 @@
     (is (true?  (chUnit #_ as-pred nil nil)))
     (is (false? (chUnit #_ as-pred nil ""))))
 
-  (testing "(chObj ...)"
-    (is                         (chObj   1))
-    (is (thrown? AssertionError (chObj nil)))
+  (testing "(chSome ...)"
+    (is                         (chSome   1))
+    (is (thrown? AssertionError (chSome nil)))
 
-    (is (true?  (chObj #_ as-pred nil  "")))
-    (is (false? (chObj #_ as-pred nil nil))))
+    (is (true?  (chSome #_ as-pred nil  "")))
+    (is (false? (chSome #_ as-pred nil nil))))
 
-  (testing "(chMaybe ...)")
+  (testing "(chMaybe ...)"
+    (is (nil?                   (chMaybe chA                 nil)))
+    (is                         (chMaybe chA                 (A.)))
+    (is (thrown? AssertionError (chMaybe chA                (B.))))
+    (is (true?                  (chMaybe chA #_ as-pred nil  nil)))
+    (is (true?                  (chMaybe chA #_ as-pred nil (A.))))
+    (is (false?                 (chMaybe chA #_ as-pred nil (B.))))
 
-  (testing "(chMaybe ...) with (defch ...)")
+    (is (nil?                   (chMaybe chUnit nil)))
+    (is (thrown? AssertionError (chMaybe chUnit (A.))))
+    (is (thrown? AssertionError (chMaybe chUnit (B.)))))
 
-  (testing "(chEither ...)")
+  (testing "(chMaybe ...) with (defch ...)"
+    (is (nil?                   (chMaybeA                 nil)))
+    (is                         (chMaybeA                 (A.)))
+    (is (thrown? AssertionError (chMaybeA                (B.))))
+    (is (true?                  (chMaybeA #_ as-pred nil  nil)))
+    (is (true?                  (chMaybeA #_ as-pred nil (A.))))
+    (is (false?                 (chMaybeA #_ as-pred nil (B.)))))
 
-  (testing "(chEither ...) with (defch ...)")
+  (testing "(chEither ...)"
+    (is (nil?                   (chEither chA chUnit  nil)))
+    (is                         (chEither chA chUnit  (A.)))
+    (is (thrown? AssertionError (chEither chA chUnit (B.))))
+    (is                         (chEither chA chB     (A.)))
+    (is                         (chEither chA chB     (B.)))
+    (is (thrown? AssertionError (chEither chA chB    (C.))))
+    (is (thrown? AssertionError (chEither chA chB     nil)))
+
+    (is (true?   (chEither chA chUnit #_ as-pred nil  nil)))
+    (is (true?   (chEither chA chUnit #_ as-pred nil (A.))))
+    (is (false?  (chEither chA chUnit #_ as-pred nil (B.))))
+    (is (true?   (chEither chA chB    #_ as-pred nil (A.))))
+    (is (true?   (chEither chA chB    #_ as-pred nil (B.))))
+    (is (false?  (chEither chA chB    #_ as-pred nil (C.))))
+    (is (false?  (chEither chA chB    #_ as-pred nil nil))))
+
+  (testing "(chEither ...) with (defch ...)"
+    (is (nil?                   (chEitherAUnit  nil)))
+    (is                         (chEitherAUnit  (A.)))
+    (is (thrown? AssertionError (chEitherAUnit (B.))))
+    (is                         (chEitherAB     (A.)))
+    (is                         (chEitherAB     (B.)))
+    (is (thrown? AssertionError (chEitherAB    (C.))))
+    (is (thrown? AssertionError (chEitherAB     nil)))
+
+    (is (true?   (chEitherAUnit #_ as-pred nil  nil)))
+    (is (true?   (chEitherAUnit #_ as-pred nil (A.))))
+    (is (false?  (chEitherAUnit #_ as-pred nil (B.))))
+    (is (true?   (chEitherAB    #_ as-pred nil (A.))))
+    (is (true?   (chEitherAB    #_ as-pred nil (B.))))
+    (is (false?  (chEitherAB    #_ as-pred nil (C.))))
+    (is (false?  (chEitherAB    #_ as-pred nil nil))))
 
   (testing "(ch| ...)")
 
