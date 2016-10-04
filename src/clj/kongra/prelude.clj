@@ -24,14 +24,16 @@
      `(boolean ~expr))))
 
 (defmacro chp
-  "Turns a (ch ...)-like form into a predicate. Applies the predicate
-  when passed an argument."
+  "Turns a (ch ...)-like form or a symbol into a predicate. Applies
+  the predicate when passed an argument."
   {:style/indent 1}
   ([form] ;; WARNING: USE ONLY WITHIN (defch ...)
-   (seq (conj (vec form) #_ as-pred nil)))
+   (let [form (if (symbol? form) (list form) form)]
+    (seq (conj (vec form) #_ as-pred nil))))
 
   ([form x]
-   (seq (conj (vec form) #_ as-pred nil x))))
+   (let [form (if (symbol? form) (list form) form)]
+    (seq (conj (vec form) #_ as-pred nil x)))))
 
 (defmacro defch {:style/indent 1}
   ([chname     pred] `(defch ~chname x# ~pred))
@@ -67,7 +69,7 @@
    (assert (seq     chs)        "(ch| ...) must contain some chs"  )
    (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
    (let [x'       (gensym "x__")
-         pred-chs (map (fn [ch] `(chp (~ch) ~x')) (butlast chs))
+         pred-chs (map (fn [ch] `(chp ~ch ~x')) (butlast chs))
          ch       (list (last chs) x')
          n        (count pred-chs)]
 
@@ -80,7 +82,7 @@
    (assert (seq     chs)        "(ch| ...) must contain some chs"  )
    (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
    (let [x'       (gensym "x")
-         pred-chs (map (fn [ch] `(chp (~ch) ~x')) chs)
+         pred-chs (map (fn [ch] `(chp ~ch ~x')) chs)
          n        (count pred-chs)]
 
      (if (= n 1)
@@ -124,7 +126,7 @@
 
   ([x]
    (chSet (->> @CHS
-               (filter (fn [[_ pred]] (chp (pred) x)))
+               (filter (fn [[_ pred]] (chp pred x)))
                (map first)
                (apply sorted-set))))
   ([x & xs]
