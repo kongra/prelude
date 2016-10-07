@@ -2,197 +2,16 @@
 ;; Created 2016-09-26
 
 (ns kongra.prelude
-  (:require [primitive-math :as    p]
-            [clojure.set    :as cset]))
+  (:require [primitive-math :as       p]
+            [kongra.ch      :refer :all]))
 
-;; CH - INLINED ASSERTIONS AND MEMBERSHIP PREDICATES FOR ALGEBRAIC DATA-TYPES
-
-(defn chmsg
-  [x]
-  (if (nil? x) "Illegal nil value"
-      (str "Illegal value " x " of type " (.getName (class x)))))
-
-;; NAME+PRED → CH
-(defmacro ch {:style/indent 1}
-  ([pred   x]
-   (let [x'   (gensym "x__")
-         expr (seq (conj (vec pred) x'))]
-     `(let [~x' ~x] (assert ~expr (chmsg ~x')) ~x')))
-
-  ([pred #_ as-pred _ x]
-   (let [expr (seq (conj (vec pred) x))]
-     `(boolean ~expr))))
-
-(defmacro chp
-  "Turns a (ch ...)-like form or a symbol into a predicate. Applies
-  the predicate when passed an argument."
-  {:style/indent 1}
-  ([form] ;; WARNING: USE ONLY WITHIN (defch ...)
-   (let [form (if (symbol? form) (list form) form)]
-    (seq (conj (vec form) #_ as-pred nil))))
-
-  ([form x]
-   (let [form (if (symbol? form) (list form) form)]
-    (seq (conj (vec form) #_ as-pred nil x)))))
-
-(defmacro defch {:style/indent 1}
-  ([chname     pred] `(defch ~chname x# ~pred))
-  ([chname arg pred]
-   `(defn ~chname
-      ([~arg    ]      (ch ~pred  ~arg))
-      ([~'_ ~arg] (chp (ch ~pred) ~arg)))))
-
-;; CLASS → CH
-(defmacro chc {:style/indent 1}
-  ([c   x] `     (ch (instance? ~c)  ~x))
-  ([c _ x] `(chp (ch (instance? ~c)) ~x)))
-
-(defmacro defchc {:style/indent 1}
-  [chname c]
-  `(defch ~chname (chp (chc ~c))))
-
-(defmacro chLike {:style/indent 1}
-  ([y   x] `     (chc (class ~y)  ~x))
-  ([y _ x] `(chp (chc (class ~y)) ~x)))
-
-;; UNIT (NIL)
-(defch chUnit (nil?))
-
-;; NON-UNIT (NOT NIL)
-(declare       not-nil?)
-(defch chSome (not-nil?))
-
-;; CO-PRODUCT (DISCRIMINATED UNION)
-(defmacro ch| {:style/indent 1}
-  ([chs x]
-   (assert (vector? chs)        "Must be a chs vector in (ch| ...)")
-   (assert (seq     chs)        "(ch| ...) must contain some chs"  )
-   (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
-   (let [x'       (gensym "x__")
-         pred-chs (map (fn [ch] `(chp ~ch ~x')) (butlast chs))
-         ch       (list (last chs) x')
-         n        (count pred-chs)]
-
-     (cond (zero? n) `(let [~x' ~x] ~ch)
-           (= n   1) `(let [~x' ~x] (when-not ~(first pred-chs) ~ch) ~x')
-           :else     `(let [~x' ~x] (when-not (or ~@pred-chs)   ~ch) ~x'))))
-
-  ([chs _ x]
-   (assert (vector? chs)        "Must be a chs vector in (ch| ...)")
-   (assert (seq     chs)        "(ch| ...) must contain some chs"  )
-   (assert (every? symbol? chs) "(ch| ...) chs must be symbols"    )
-   (let [x'       (gensym "x")
-         pred-chs (map (fn [ch] `(chp ~ch ~x')) chs)
-         n        (count pred-chs)]
-
-     (if (= n 1)
-       `(let [~x' ~x] ~(first pred-chs))
-       `(let [~x' ~x] (or ~@pred-chs))))))
-
-;; MAYBE
-(defmacro chMaybe {:style/indent 1}
-  ([ch   x] `     (ch| [chUnit ~ch]  ~x))
-  ([ch _ x] `(chp (ch| [chUnit ~ch]) ~x)))
-
-;; EITHER
-(defmacro chEither {:style/indent 1}
-  ([chl chr   x] `     (ch| [~chl ~chr]  ~x))
-  ([chl chr _ x] `(chp (ch| [~chl ~chr]) ~x)))
-
-;; CHS REGISTRY
-(def ^:private CHS (atom {}))
-
-(defn regch*
-  [chname ch]
-  (chUnit
-   (do
-     (assert (string? chname))
-     (assert (fn?         ch))
-     (swap! CHS
-            (fn [m]
-              (when (m chname)
-                (println "WARNING: chname already in use:" chname))
-              (assoc m chname ch))) nil)))
-
-(defmacro regch
-  [ch]
-  (assert (symbol? ch))
-  `(regch* ~(str ch) ~ch))
-
-(declare chSet)
-
-(defn chs
-  ([] (chSet (apply sorted-set (sort (keys @CHS)))))
-
-  ([x]
-   (chSet (->> @CHS
-               (filter (fn [[_ pred]] (chp pred x)))
-               (map first)
-               (apply sorted-set))))
-  ([x & xs]
-    (chSet (->> (cons x xs) (map chs) (apply cset/intersection)))))
-
-(defn chdiffs
-  [& xs]
-  (chSet (->> xs (map chs) (apply cset/difference))))
-
-;; COMMON CHS
-(defchc chAgent           clojure.lang.Agent) (regch      chAgent)
-(defchc chAtom             clojure.lang.Atom) (regch       chAtom)
-(defchc chASeq             clojure.lang.ASeq) (regch       chASeq)
-(defchc chBoolean                    Boolean) (regch    chBoolean)
-(defchc chDeref          clojure.lang.IDeref) (regch      chDeref)
-(defchc chDouble                      Double) (regch     chDouble)
-(defchc chIndexed       clojure.lang.Indexed) (regch    chIndexed)
-(defchc chLazy          clojure.lang.LazySeq) (regch       chLazy)
-(defchc chLong                          Long) (regch       chLong)
-(defchc chLookup        clojure.lang.ILookup) (regch     chLookup)
-(defchc chRef               clojure.lang.Ref) (regch        chRef)
-(defchc chSeqable       clojure.lang.Seqable) (regch    chSeqable)
-(defchc chSequential clojure.lang.Sequential) (regch chSequential)
-
-(defch  chAssoc               (associative?)) (regch      chAssoc)
-(defch  chChar                       (char?)) (regch       chChar)
-(defch  chClass                     (class?)) (regch      chClass)
-(defch  chColl                       (coll?)) (regch       chColl)
-(defch  chCounted                 (counted?)) (regch    chCounted)
-(defch  chDecimal                 (decimal?)) (regch    chDecimal)
-(defch  chDelay                     (delay?)) (regch      chDelay)
-(defch  chFloat                     (float?)) (regch      chFloat)
-(defch  chFn                           (fn?)) (regch         chFn)
-(defch  chFuture                   (future?)) (regch     chFuture)
-(defch  chIfn                         (ifn?)) (regch        chIfn)
-(defch  chInteger                 (integer?)) (regch    chInteger)
-(defch  chKeyword                 (keyword?)) (regch    chKeyword)
-(defch  chList                       (list?)) (regch       chList)
-(defch  chMap                         (map?)) (regch        chMap)
-(defch  chNumber                   (number?)) (regch     chNumber)
-(defch  chRatio                     (ratio?)) (regch      chRatio)
-(defch  chRational               (rational?)) (regch   chRational)
-(defch  chRecord                   (record?)) (regch     chRecord)
-(defch  chReduced                 (reduced?)) (regch    chReduced)
-(defch  chReversible           (reversible?)) (regch chReversible)
-(defch  chSeq                         (seq?)) (regch        chSeq)
-(defch  chSet                         (set?)) (regch        chSet)
-(defch  chSorted                   (sorted?)) (regch     chSorted)
-(defch  chString                   (string?)) (regch     chString)
-(defch  chSymbol                   (symbol?)) (regch     chSymbol)
-(defch  chVar                         (var?)) (regch        chVar)
-(defch  chVec                      (vector?)) (regch        chVec)
-
-(defchc chJavaColl      java.util.Collection) (regch   chJavaColl)
-(defchc chJavaList            java.util.List) (regch   chJavaList)
-(defchc chJavaMap              java.util.Map) (regch    chJavaMap)
-(defchc chJavaSet              java.util.Set) (regch    chJavaSet)
-
-;; INTEGRAL CHS/CONSTRS
-(deftype           PosLong [^long uncons])
-(defchc          chPosLong PosLong)
-(defn ^PosLong consPosLong [^long n] (assert (p/> n 0)) (PosLong. n))
-
-(deftype           NatLong [^long uncons])
-(defchc          chNatLong NatLong)
-(defn ^NatLong consNatLong [^long n] (assert (p/>= n 0)) (NatLong. n))
+;; ;; INTEGRAL CHS/CONSTRS
+;; (deftype           PosLong [^long uncons])
+;; (defchc          chPosLong PosLong)
+;; (defn ^PosLong consPosLong [^long n] (assert (p/> n 0)) (PosLong. n))
+;; (deftype           NatLong [^long uncons])
+;; (defchc          chNatLong NatLong)
+;; (defn ^NatLong consNatLong [^long n] (assert (p/>= n 0)) (NatLong. n))
 
 ;; SYS/JVM
 
@@ -351,7 +170,7 @@
   Object
   (toString [_] (str s)))
 
-(defchc chKleene Kleene)
+(defchC chKleene Kleene)
 
 (def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
 (def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
@@ -452,8 +271,8 @@
 
 ;; RANDOM UTILS
 
-(defchc chRandom        java.util.Random) (regch chRandom)
-(defchc chRandist kongra.prelude.Randist)
+(defchC chRandom        java.util.Random) (regch chRandom)
+(defchC chRandist kongra.prelude.Randist)
 
 (defn uuid!
   []
