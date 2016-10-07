@@ -5,13 +5,23 @@
   (:require [primitive-math :as       p]
             [kongra.ch      :refer :all]))
 
-;; ;; INTEGRAL CHS/CONSTRS
-;; (deftype           PosLong [^long uncons])
-;; (defchc          chPosLong PosLong)
-;; (defn ^PosLong consPosLong [^long n] (assert (p/> n 0)) (PosLong. n))
-;; (deftype           NatLong [^long uncons])
-;; (defchc          chNatLong NatLong)
-;; (defn ^NatLong consNatLong [^long n] (assert (p/>= n 0)) (NatLong. n))
+;; POSITIVE/NATURAL INTEGRALS
+(defn pos-long? [^long n] (p/>  n 0))
+(defn nat-long? [^long n] (p/>= n 0))
+
+(defch chPoslong `(ch pos-long?))
+(defch chNatlong `(ch pos-long?))
+
+(defn pos-Long?
+  [n]
+  (and (chLong nil n) (pos-long? (.longValue ^Long n))))
+
+(defn nat-Long?
+  [n]
+  (and (chLong nil n) (nat-long? (.longValue ^Long n))))
+
+(defch chPosLong `(ch pos-Long?))
+(defch chNatLong `(ch nat-Long?))
 
 ;; SYS/JVM
 
