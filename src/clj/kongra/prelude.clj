@@ -254,51 +254,45 @@
   [nodes new-nodes]
   (chSeq (lazy-cat (chSeq new-nodes) (chSeq nodes))))
 
-;; (defn tree-search
-;;   [start goal? adjs combiner]
-;;   (loop [nodes (list start)]
-;;     (when (seq (chSeq nodes)))))
+(defn tree-search
+  [start goal? adjs combiner]
+  (chIfn goal?) (chIfn adjs) (chIfn combiner)
+  (chMaybe chSome
+    (loop [nodes (list start)]
+      (when (seq (chSeq nodes))
+        (let [obj (first nodes)]
+          (if (chBoolean (goal? obj))
+            obj
 
-;; (defn tree-search
-;;   ;;:- (a) -> (a -> Boolean) -> (a -> (a)) -> ((a) -> (a) -> (a)) -> a|nil
-;;   "Searches state-spaces that have the form of trees. Starts with
-;;   a sequence of states and performs the search according to the
-;;   goal? predicate, generator of nodes adjacent do a given node
-;;   and combiner responsible of adding nodes to the search
-;;   collection of nodes."
-;;   [states goal? adjacent combiner]
-;;   (when (seq states)
-;;     (let [obj (first states)]
-;;       (if (goal? obj)
-;;         obj
+            (recur (combiner (chSeq (rest nodes)) (chSeq (adjs obj))))))))))
 
-;;         (recur (combiner (adjacent obj) (rest states))
-;;                goal?
-;;                adjacent
-;;                combiner)))))
+(defn breadth-first-search
+  [start goal? adjs]
+  (chIfn goal?) (chIfn adjs)
+  (chMaybe chSome (tree-search start goal? adjs breadth-first-combiner)))
 
-;; (defn breadth-first-tree-levels
-;;   ;;:- a -> (a -> (a)) -> ((a))
-;;   "Returns a lazy collection of lazy sequences of nodes belonging
-;;   to subsequent tree levels."
-;;   [start adjacent]
-;;   (->> (list start)
-;;        (iterate #(mapcat adjacent %))
-;;        (take-while seq)))
+(defn depth-first-search
+  [start goal? adjs]
+  (chIfn goal?) (chIfn adjs)
+  (chMaybe chSome (tree-search start goal? adjs depth-first-combiner)))
 
-;; (defn breadth-first-tree-seq
-;;   "Returns a lazy sequence of tree nodes starting with the passed
-;;   start node where adjacent is a function generating nodes
-;;   adjacent to it's argument.
+(defn breadth-first-tree-levels
+  [start adjs]
+  (chIfn adjs)
+  (chSeq (->> (list start)
+              (iterate #(mapcat adjs %))
+              (take-while seq))))
 
-;;   Goes on infinitely unless the limiting depth specified."
-;;   ([start adjacent] ;:- a -> (a -> (a)) -> (a)
-;;      (apply concat (breadth-first-tree-levels start adjacent)))
+(defn breadth-first-tree-seq
+  ([start adjs]
+   (chIfn adjs)
+   (chSeq (apply concat (breadth-first-tree-levels start adjs))))
 
-;;   ([start adjacent depth] ;:- a -> (a -> (a)) -> Positive Long -> (a)
-;;      (->> (breadth-first-tree-levels start adjacent)
-;;           (take depth)
-;;           (reduce concat))))
+  ([start adjs depth]
+   (chIfn adjs)
+   (chSeq (->> (breadth-first-tree-levels start adjs)
+               (take  depth)
+               (apply concat)))))
 
 ;; RANDOM UTILS
 
