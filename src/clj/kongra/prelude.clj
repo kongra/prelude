@@ -159,6 +159,10 @@
   [x]
   (chBoolean (bnot (ref= x nil))))
 
+;; KIBIT CHEATERS
+(defn lazy-cat' [s1 s2] (lazy-cat s1 s2))
+(defn chSeq'    [x    ] (chSeq x))
+
 ;; ARRAYS AND RELATED CHECKS
 
 (defn make-longs ^longs
@@ -243,58 +247,7 @@
                KleeneTrue
                KleeneUndefined))))))
 
-;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
-;; FOR MORE SEE clongra.search
-
-(defn breadth-first-combiner
-  [nodes new-nodes]
-  (chSeq (lazy-cat (chSeq nodes) (chSeq new-nodes))))
-
-(defn depth-first-combiner
-  [nodes new-nodes]
-  (chSeq (lazy-cat (chSeq new-nodes) (chSeq nodes))))
-
-(defn tree-search
-  [start goal? adjs combiner]
-  (chIfn goal?) (chIfn adjs) (chIfn combiner)
-  (chMaybe chSome
-    (loop [nodes (list start)]
-      (when (seq (chSeq nodes))
-        (let [obj (first nodes)]
-          (if (chBoolean (goal? obj))
-            obj
-
-            (recur (combiner (chSeq (rest nodes)) (chSeq (adjs obj))))))))))
-
-(defn breadth-first-search
-  [start goal? adjs]
-  (chIfn goal?) (chIfn adjs)
-  (chMaybe chSome (tree-search start goal? adjs breadth-first-combiner)))
-
-(defn depth-first-search
-  [start goal? adjs]
-  (chIfn goal?) (chIfn adjs)
-  (chMaybe chSome (tree-search start goal? adjs depth-first-combiner)))
-
-(defn breadth-first-tree-levels
-  [start adjs]
-  (chIfn adjs)
-  (chSeq (->> (list start)
-              (iterate #(mapcat adjs %))
-              (take-while seq))))
-
-(defn breadth-first-tree-seq
-  ([start adjs]
-   (chIfn adjs)
-   (chSeq (apply concat (breadth-first-tree-levels start adjs))))
-
-  ([start adjs depth]
-   (chIfn adjs)
-   (chSeq (->> (breadth-first-tree-levels start adjs)
-               (take  depth)
-               (apply concat)))))
-
-;; RANDOM UTILS
+;; PSEUDORANDOM NUMBERS GENERATORS
 
 (defchC chRandom        java.util.Random) (regch chRandom)
 (defchC chRandist kongra.prelude.Randist)
