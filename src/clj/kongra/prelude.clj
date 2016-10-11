@@ -176,9 +176,20 @@
   [^long size]
   (kongra.prelude.Primitives/makeObjects size))
 
-(defn longs?   [x] (kongra.prelude.Primitives/isLongs   x))
-(defn doubles? [x] (kongra.prelude.Primitives/isDoubles x))
-(defn objects? [x] (kongra.prelude.Primitives/isObjects x))
+(defn longs?
+  {:inline (fn [x] `(kongra.prelude.Primitives/isLongs ~x))}
+  [x]
+  (kongra.prelude.Primitives/isLongs x))
+
+(defn doubles?
+  {:inline (fn [x] `(kongra.prelude.Primitives/isDoubles ~x))}
+  [x]
+  (kongra.prelude.Primitives/isDoubles x))
+
+(defn objects?
+  {:inline (fn [x] `(kongra.prelude.Primitives/isObjects ~x))}
+  [x]
+  (kongra.prelude.Primitives/isObjects x))
 
 (defch chLongs   `(ch   longs?))
 (defch chDoubles `(ch doubles?))
