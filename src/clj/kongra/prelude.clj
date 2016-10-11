@@ -145,6 +145,22 @@
   (chVec (vec (concat (subvec v 0 n)
                       (subvec v (p/inc n))))))
 
+(defn ref=
+  "Alias of clojure.core/identical."
+  {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
+  [x y]
+  (chBoolean (clojure.lang.Util/identical x y)))
+
+(defn bnot [b]
+  {:inline (fn [b] `(chBoolean (kongra.prelude.Primitives/bnot ~b)))}
+  (chBoolean (kongra.prelude.Primitives/bnot b)))
+
+(defn not-nil? ;:- a|nil -> Boolean
+  [x]
+  (chBoolean (bnot (ref= x nil))))
+
+;; ARRAYS AND RELATED CHECKS
+
 (defn make-longs ^longs
   {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
   [^long size]
@@ -160,19 +176,13 @@
   [^long size]
   (kongra.prelude.Primitives/makeObjects size))
 
-(defn ref=
-  "Alias of clojure.core/identical."
-  {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
-  [x y]
-  (chBoolean (clojure.lang.Util/identical x y)))
+(defn longs?   [x] (kongra.prelude.Primitives/isLongs   x))
+(defn doubles? [x] (kongra.prelude.Primitives/isDoubles x))
+(defn objects? [x] (kongra.prelude.Primitives/isObjects x))
 
-(defn bnot [b]
-  {:inline (fn [b] `(chBoolean (kongra.prelude.Primitives/bnot ~b)))}
-  (chBoolean (kongra.prelude.Primitives/bnot b)))
-
-(defn not-nil? ;:- a|nil -> Boolean
-  [x]
-  (chBoolean (bnot (ref= x nil))))
+(defch chLongs   `(ch   longs?))
+(defch chDoubles `(ch doubles?))
+(defch chObjects `(ch objects?))
 
 ;; KLEENE LOGIC
 
