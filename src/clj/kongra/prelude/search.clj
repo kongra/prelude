@@ -2,7 +2,7 @@
 ;; Created 2016-10-11
 
 (ns kongra.prelude.search
-  (:require [kongra.ch      :refer        :all]
+  (:require [kongra.ch      :refer                         :all]
             [kongra.prelude :refer [chPosLong chSeq' lazy-cat']]))
 
 ;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
