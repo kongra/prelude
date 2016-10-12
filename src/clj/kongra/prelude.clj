@@ -251,7 +251,7 @@
 
 ;; PSEUDORANDOM NUMBERS GENERATORS
 
-(defchC chRandom        java.util.Random) (regch chRandom)
+(defchC chRandom        java.util.Random)
 (defchC chRandist kongra.prelude.Randist)
 
 (defn uuid!
