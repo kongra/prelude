@@ -160,6 +160,12 @@
   [x]
   (bnot (ref= x nil)))
 
+(defmacro synchronized {:style/indent 1}
+  [monitor & body]
+  `(kongra.prelude.Synchronized/invoke
+    (chSome ~monitor)
+    (fn [] ~@body)))
+
 ;; KIBIT CHEATERS
 
 (defn lazy-cat' [s1 s2] (lazy-cat s1 s2))
