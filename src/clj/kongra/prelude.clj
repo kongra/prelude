@@ -156,7 +156,7 @@
   {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
   (kongra.prelude.Primitives/bnot b))
 
-(defn not-nil? ;:- a|nil -> Boolean
+(defn not-nil?
   [x]
   (bnot (ref= x nil)))
 

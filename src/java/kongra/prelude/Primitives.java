@@ -8,7 +8,7 @@ import clojure.lang.RT;
 public final class Primitives {
 
   public static Boolean bnot(Boolean b) {
-		return !b.booleanValue();
+    return !b.booleanValue();
   }
 
   public static long[] makeLongs(long size) {
@@ -20,21 +20,21 @@ public final class Primitives {
   }
 
   public static Object[] makeObjects(long size) {
-	  return new Object[RT.intCast(size)];
+    return new Object[RT.intCast(size)];
   }
 
-	public static boolean isLongs(Object x) {
-		return x instanceof long[];
-	}
+  public static boolean isLongs(Object x) {
+    return x instanceof long[];
+  }
 
-	public static boolean isDoubles(Object x) {
-		return x instanceof double[];
-	}
+  public static boolean isDoubles(Object x) {
+    return x instanceof double[];
+  }
 
-	public static boolean isObjects(Object x) {
-		return x instanceof Object[];
-	}
+  public static boolean isObjects(Object x) {
+    return x instanceof Object[];
+  }
 
-	private Primitives () { }
+  private Primitives () { }
 
 }
