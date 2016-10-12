@@ -6,6 +6,7 @@
             [kongra.ch      :refer :all]))
 
 ;; POSITIVE/NATURAL INTEGRALS
+
 (defn pos-long? [^long n] (p/>  n 0))
 (defn nat-long? [^long n] (p/>= n 0))
 
@@ -152,14 +153,15 @@
   (chBoolean (clojure.lang.Util/identical x y)))
 
 (defn bnot [b]
-  {:inline (fn [b] `(chBoolean (kongra.prelude.Primitives/bnot ~b)))}
-  (chBoolean (kongra.prelude.Primitives/bnot b)))
+  {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
+  (kongra.prelude.Primitives/bnot b))
 
 (defn not-nil? ;:- a|nil -> Boolean
   [x]
-  (chBoolean (bnot (ref= x nil))))
+  (bnot (ref= x nil)))
 
 ;; KIBIT CHEATERS
+
 (defn lazy-cat' [s1 s2] (lazy-cat s1 s2))
 (defn chSeq'    [x    ] (chSeq x))
 

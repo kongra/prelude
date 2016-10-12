@@ -8,6 +8,7 @@
 ;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
 
 ;; COMBINERS
+
 (deftype Comb [f]
   clojure.lang.IFn
   (invoke [_ nodes new-nodes]
@@ -23,6 +24,7 @@
 (def lazy-depth-first-combiner   (cComb #(lazy-cat %2 %1)))
 
 ;; GOAL
+
 (deftype Goal [f]
   clojure.lang.IFn
   (invoke [_ x] (boolean (f x))))
@@ -31,6 +33,7 @@
 (defn    cGoal [f] (Goal. (chIfn f)))
 
 ;; ADJACENCY
+
 (deftype Adjs [f]
   clojure.lang.IFn
   (invoke [_ x] (chSeq (f x))))
@@ -39,6 +42,7 @@
 (defn    cAdjs [f] (Adjs. (chIfn f)))
 
 ;; TREE-SEARCH
+
 (defn tree-search
   [start goal? adjs comb]
   (chGoal goal?) (chAdjs adjs) (chComb comb)
@@ -67,6 +71,7 @@
                  depth-first-combiner)))
 
 ;; TREE-SEARCH SEQ
+
 (defn breadth-first-tree-levels
   [start adjs]
   (chAdjs adjs)
