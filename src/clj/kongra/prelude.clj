@@ -80,6 +80,16 @@
   (chMaybe chString s)
   (chBoolean (not (blank? s))))
 
+(defn strip
+  [s]
+  (chMaybe chString s)
+  (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
+
+(deftype  StrippedNonBlank [s] java.lang.Object (toString [_] s))
+(defchC chStrippedNonBlank StrippedNonBlank)
+(defn consStrippedNonBlank [s]
+  (StrippedNonBlank. (ch not-blank? (strip s))))
+
 (defn indent-string
   ([^long n]
    (chString (indent-string n " ")))

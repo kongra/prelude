@@ -15,13 +15,13 @@
     (chSeq (f (chSeq nodes) (chSeq new-nodes)))))
 
 (defchC chComb Comb)
-(defn    cComb [f] (Comb. (chIfn f)))
+(defn consComb [f] (Comb. (chIfn f)))
 
-(def breadth-first-combiner      (cComb    concat))
-(def lazy-breadth-first-combiner (cComb lazy-cat'))
+(def breadth-first-combiner      (consComb    concat))
+(def lazy-breadth-first-combiner (consComb lazy-cat'))
 
-(def depth-first-combiner        (cComb #(concat   %2 %1)))
-(def lazy-depth-first-combiner   (cComb #(lazy-cat %2 %1)))
+(def depth-first-combiner        (consComb #(concat   %2 %1)))
+(def lazy-depth-first-combiner   (consComb #(lazy-cat %2 %1)))
 
 ;; GOAL
 
@@ -30,7 +30,7 @@
   (invoke [_ x] (boolean (f x))))
 
 (defchC chGoal `Goal)
-(defn    cGoal [f] (Goal. (chIfn f)))
+(defn consGoal [f] (Goal. (chIfn f)))
 
 ;; ADJACENCY
 
@@ -39,7 +39,7 @@
   (invoke [_ x] (chSeq (f x))))
 
 (defchC chAdjs Adjs)
-(defn    cAdjs [f] (Adjs. (chIfn f)))
+(defn consAdjs [f] (Adjs. (chIfn f)))
 
 ;; TREE-SEARCH
 
@@ -106,21 +106,21 @@
 ;;   []
 ;;   (tree-search
 ;;    'a
-;;    (cGoal #(= % 'p))
-;;    (cAdjs #(or (ADJS %) '()))
+;;    (consGoal #(= % 'p))
+;;    (consAdjs #(or (ADJS %) '()))
 ;;    lazy-breadth-first-combiner))
 
 ;; (defn test1
 ;;   []
 ;;   (breadth-first-search
 ;;    'a
-;;    (cGoal #(= % 'p))
-;;    (cAdjs #(or (ADJS %) '()))))
+;;    (consGoal #(= % 'p))
+;;    (consAdjs #(or (ADJS %) '()))))
 
 ;; (defn test2
 ;;   []
-;;   (doall (breadth-first-tree-levels 'a (cAdjs #(or (ADJS %) '())))))
+;;   (doall (breadth-first-tree-levels 'a (consAdjs #(or (ADJS %) '())))))
 
 ;; (defn test3
 ;;   []
-;;   (doall (breadth-first-tree-seq 'a (cAdjs #(or (ADJS %) '())) 0)))
+;;   (doall (breadth-first-tree-seq 'a (consAdjs #(or (ADJS %) '())) 0)))
