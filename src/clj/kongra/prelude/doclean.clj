@@ -12,13 +12,16 @@
 
 (defn ^kongra.prelude.Doclean create [ ] (kongra.prelude.Doclean.))
 
-(defn close! [d] (chUnit (.close ^kongra.prelude.Doclean d)))
+(defn close! [^kongra.prelude.Doclean d] (chUnit (.close d)))
 
 (def ^:dynamic *doclean* nil)
 
-(defmacro with
-  [d & body]
-  `(binding [*doclean* (chDoclean ~d)] ~@body))
+(defmacro exec
+  "Executes the body of expressions in a new *doclean*. BEWARE LAZINESS."
+  [& body]
+  `(with-open [d# (create)]
+     (binding [*doclean* d#]
+       ~@body)))
 
 (defn ensure
   []
@@ -33,11 +36,3 @@
 
   ([f]
    (chUnit (register! (ensure) (chIfn f)))))
-
-(defmacro do
-  "Executes the body of expressions in a new *doclean*. BEWARE LAZINESS."
-  [& body]
-  `(let [d# (create)]
-     (with d#
-       (with-open [dc# d#]
-         ~@body))))
