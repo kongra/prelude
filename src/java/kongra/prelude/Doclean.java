@@ -11,10 +11,13 @@ import java.util.List;
 
 public final class Doclean implements Closeable {
 
+  private final List<Closeable> cs = new ArrayList<>();
+  private boolean closed;
+
   public synchronized void register(Closeable c) {
     if (closed) {
       throw new IllegalStateException("The Doclean is closed, can't register "
-                                      + c);
+                                        + c);
     }
     cs.add(c);
   }
@@ -38,9 +41,5 @@ public final class Doclean implements Closeable {
     }
     cs.clear();
   }
-
-  private boolean closed;
-
-  private final List<Closeable> cs = new ArrayList<>();
 
 }

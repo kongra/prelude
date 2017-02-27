@@ -40,7 +40,7 @@ public class Randist {
   /**
    * Returns a random real number uniformly in [0, 1).
    *
-   * @return     a random real number uniformly in [0, 1)
+   * @return a random real number uniformly in [0, 1)
    * @deprecated Replaced by {@link #uniform()}.
    */
   public double random() {
@@ -50,8 +50,8 @@ public class Randist {
   /**
    * Returns a random integer uniformly in [a, b).
    *
-   * @param  a the left endpoint
-   * @param  b the right endpoint
+   * @param a the left endpoint
+   * @param b the right endpoint
    * @return a random integer uniformly in [a, b)
    * @throws IllegalArgumentException if <tt>b <= a</tt>
    * @throws IllegalArgumentException if <tt>b - a >= Integer.MAX_VALUE</tt>
@@ -65,23 +65,23 @@ public class Randist {
   /**
    * Returns a random real number uniformly in [a, b).
    *
-   * @param  a the left endpoint
-   * @param  b the right endpoint
+   * @param a the left endpoint
+   * @param b the right endpoint
    * @return a random real number uniformly in [a, b)
    * @throws IllegalArgumentException unless <tt>a < b</tt>
    */
   public double uniform(double a, double b) {
     if (!(a < b)) throw new IllegalArgumentException("Invalid range");
-    return a + uniform() * (b-a);
+    return a + uniform() * (b - a);
   }
 
   /**
    * Returns a random boolean from a Bernoulli distribution with success
    * probability <em>p</em>.
    *
-   * @param  p the probability of returning <tt>true</tt>
+   * @param p the probability of returning <tt>true</tt>
    * @return <tt>true</tt> with probability <tt>p</tt> and
-   *         <tt>false</tt> with probability <tt>p</tt>
+   * <tt>false</tt> with probability <tt>p</tt>
    * @throws IllegalArgumentException unless <tt>p >= 0.0</tt> and <tt>p <= 1.0</tt>
    */
   public boolean bernoulli(double p) {
@@ -95,7 +95,7 @@ public class Randist {
    * probability 1/2.
    *
    * @return <tt>true</tt> with probability 1/2 and
-   *         <tt>false</tt> with probability 1/2
+   * <tt>false</tt> with probability 1/2
    */
   public boolean bernoulli() {
     return bernoulli(0.5);
@@ -105,7 +105,7 @@ public class Randist {
    * Returns a random real number from a standard Gaussian distribution.
    *
    * @return a random real number from a standard Gaussian distribution
-   *         (mean 0 and standard deviation 1).
+   * (mean 0 and standard deviation 1).
    */
   public double gaussian() {
     // use the polar form of the Box-Muller transform
@@ -113,7 +113,7 @@ public class Randist {
     do {
       x = uniform(-1.0, 1.0);
       y = uniform(-1.0, 1.0);
-      r = x*x + y*y;
+      r = x * x + y * y;
     } while (r >= 1 || r == 0);
     return x * Math.sqrt(-2 * Math.log(r) / r);
 
@@ -125,10 +125,10 @@ public class Randist {
    * Returns a random real number from a Gaussian distribution with mean &mu;
    * and standard deviation &sigma;.
    *
-   * @param  mu the mean
-   * @param  sigma the standard deviation
+   * @param mu    the mean
+   * @param sigma the standard deviation
    * @return a real number distributed according to the Gaussian distribution
-   *         with mean <tt>mu</tt> and standard deviation <tt>sigma</tt>
+   * with mean <tt>mu</tt> and standard deviation <tt>sigma</tt>
    */
   public double gaussian(double mu, double sigma) {
     return mu + sigma * gaussian();
@@ -138,9 +138,9 @@ public class Randist {
    * Returns a random integer from a geometric distribution with success
    * probability <em>p</em>.
    *
-   * @param  p the parameter of the geometric distribution
+   * @param p the parameter of the geometric distribution
    * @return a random integer from a geometric distribution with success
-   *         probability <tt>p</tt>
+   * probability <tt>p</tt>
    * @throws IllegalArgumentException unless <tt>p >= 0.0</tt> and <tt>p <= 1.0</tt>
    */
   public int geometric(double p) {
@@ -153,7 +153,7 @@ public class Randist {
   /**
    * Returns a random integer from a Poisson distribution with mean &lambda;.
    *
-   * @param  lambda the mean of the Poisson distribution
+   * @param lambda the mean of the Poisson distribution
    * @return a random integer from a Poisson distribution with mean <tt>lambda</tt>
    * @throws IllegalArgumentException unless <tt>lambda > 0.0</tt> and not infinite
    */
@@ -171,7 +171,7 @@ public class Randist {
       k++;
       p *= uniform();
     } while (p >= L);
-    return k-1;
+    return k - 1;
   }
 
   /**
@@ -187,15 +187,15 @@ public class Randist {
    * Returns a random real number from a Pareto distribution with
    * shape parameter &alpha;.
    *
-   * @param  alpha shape parameter
+   * @param alpha shape parameter
    * @return a random real number from a Pareto distribution with shape
-   *         parameter <tt>alpha</tt>
+   * parameter <tt>alpha</tt>
    * @throws IllegalArgumentException unless <tt>alpha > 0.0</tt>
    */
   public double pareto(double alpha) {
     if (!(alpha > 0.0))
       throw new IllegalArgumentException("Shape parameter alpha must be positive");
-    return Math.pow(1 - uniform(), -1.0/alpha) - 1.0;
+    return Math.pow(1 - uniform(), -1.0 / alpha) - 1.0;
   }
 
   /**
@@ -210,10 +210,10 @@ public class Randist {
   /**
    * Returns a random integer from the specified discrete distribution.
    *
-   * @param  probabilities the probability of occurrence of each integer
+   * @param probabilities the probability of occurrence of each integer
    * @return a random integer from a discrete distribution:
-   *         <tt>i</tt> with probability <tt>probabilities[i]</tt>
-   * @throws NullPointerException if <tt>probabilities</tt> is <tt>null</tt>
+   * <tt>i</tt> with probability <tt>probabilities[i]</tt>
+   * @throws NullPointerException     if <tt>probabilities</tt> is <tt>null</tt>
    * @throws IllegalArgumentException if sum of array entries is not (very nearly) equal to <tt>1.0</tt>
    * @throws IllegalArgumentException unless <tt>probabilities[i] >= 0.0</tt> for each index <tt>i</tt>
    */
@@ -244,10 +244,10 @@ public class Randist {
   /**
    * Returns a random integer from the specified discrete distribution.
    *
-   * @param  frequencies the frequency of occurrence of each integer
+   * @param frequencies the frequency of occurrence of each integer
    * @return a random integer from a discrete distribution:
-   *         <tt>i</tt> with probability proportional to <tt>frequencies[i]</tt>
-   * @throws NullPointerException if <tt>frequencies</tt> is <tt>null</tt>
+   * <tt>i</tt> with probability proportional to <tt>frequencies[i]</tt>
+   * @throws NullPointerException     if <tt>frequencies</tt> is <tt>null</tt>
    * @throws IllegalArgumentException if all array entries are <tt>0</tt>
    * @throws IllegalArgumentException if <tt>frequencies[i]</tt> is negative for any index <tt>i</tt>
    * @throws IllegalArgumentException if sum of frequencies exceeds <tt>Integer.MAX_VALUE</tt> (2<sup>31</sup> - 1)
@@ -282,9 +282,9 @@ public class Randist {
    * Returns a random real number from an exponential distribution
    * with rate &lambda;.
    *
-   * @param  lambda the rate of the exponential distribution
+   * @param lambda the rate of the exponential distribution
    * @return a random real number from an exponential distribution with
-   *         rate <tt>lambda</tt>
+   * rate <tt>lambda</tt>
    * @throws IllegalArgumentException unless <tt>lambda > 0.0</tt>
    */
   public double exp(double lambda) {
@@ -296,14 +296,14 @@ public class Randist {
   /**
    * Rearranges the elements of the specified array in uniformly random order.
    *
-   * @param  a the array to shuffle
+   * @param a the array to shuffle
    * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
    */
   public void shuffle(Object[] a) {
     if (a == null) throw new NullPointerException("argument array is null");
     int n = a.length;
     for (int i = 0; i < n; i++) {
-      int r = i + uniform(n-i);     // between i and n-1
+      int r = i + uniform(n - i);     // between i and n-1
       Object temp = a[i];
       a[i] = a[r];
       a[r] = temp;
@@ -313,14 +313,14 @@ public class Randist {
   /**
    * Rearranges the elements of the specified array in uniformly random order.
    *
-   * @param  a the array to shuffle
+   * @param a the array to shuffle
    * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
    */
   public void shuffle(double[] a) {
     if (a == null) throw new NullPointerException("argument array is null");
     int n = a.length;
     for (int i = 0; i < n; i++) {
-      int r = i + uniform(n-i);     // between i and n-1
+      int r = i + uniform(n - i);     // between i and n-1
       double temp = a[i];
       a[i] = a[r];
       a[r] = temp;
@@ -330,14 +330,14 @@ public class Randist {
   /**
    * Rearranges the elements of the specified array in uniformly random order.
    *
-   * @param  a the array to shuffle
+   * @param a the array to shuffle
    * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
    */
   public void shuffle(int[] a) {
     if (a == null) throw new NullPointerException("argument array is null");
     int n = a.length;
     for (int i = 0; i < n; i++) {
-      int r = i + uniform(n-i);     // between i and n-1
+      int r = i + uniform(n - i);     // between i and n-1
       int temp = a[i];
       a[i] = a[r];
       a[r] = temp;
@@ -348,12 +348,11 @@ public class Randist {
   /**
    * Rearranges the elements of the specified subarray in uniformly random order.
    *
-   * @param  a the array to shuffle
-   * @param  lo the left endpoint (inclusive)
-   * @param  hi the right endpoint (inclusive)
-   * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
+   * @param a  the array to shuffle
+   * @param lo the left endpoint (inclusive)
+   * @param hi the right endpoint (inclusive)
+   * @throws NullPointerException      if <tt>a</tt> is <tt>null</tt>
    * @throws IndexOutOfBoundsException unless <tt>(0 <= lo) && (lo <= hi) && (hi < a.length)</tt>
-   *
    */
   public void shuffle(Object[] a, int lo, int hi) {
     if (a == null) throw new NullPointerException("argument array is null");
@@ -361,7 +360,7 @@ public class Randist {
       throw new IndexOutOfBoundsException("Illegal subarray range");
     }
     for (int i = lo; i <= hi; i++) {
-      int r = i + uniform(hi-i+1);     // between i and hi
+      int r = i + uniform(hi - i + 1);     // between i and hi
       Object temp = a[i];
       a[i] = a[r];
       a[r] = temp;
@@ -371,10 +370,10 @@ public class Randist {
   /**
    * Rearranges the elements of the specified subarray in uniformly random order.
    *
-   * @param  a the array to shuffle
-   * @param  lo the left endpoint (inclusive)
-   * @param  hi the right endpoint (inclusive)
-   * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
+   * @param a  the array to shuffle
+   * @param lo the left endpoint (inclusive)
+   * @param hi the right endpoint (inclusive)
+   * @throws NullPointerException      if <tt>a</tt> is <tt>null</tt>
    * @throws IndexOutOfBoundsException unless <tt>(0 <= lo) && (lo <= hi) && (hi < a.length)</tt>
    */
   public void shuffle(double[] a, int lo, int hi) {
@@ -383,7 +382,7 @@ public class Randist {
       throw new IndexOutOfBoundsException("Illegal subarray range");
     }
     for (int i = lo; i <= hi; i++) {
-      int r = i + uniform(hi-i+1);     // between i and hi
+      int r = i + uniform(hi - i + 1);     // between i and hi
       double temp = a[i];
       a[i] = a[r];
       a[r] = temp;
@@ -393,10 +392,10 @@ public class Randist {
   /**
    * Rearranges the elements of the specified subarray in uniformly random order.
    *
-   * @param  a the array to shuffle
-   * @param  lo the left endpoint (inclusive)
-   * @param  hi the right endpoint (inclusive)
-   * @throws NullPointerException if <tt>a</tt> is <tt>null</tt>
+   * @param a  the array to shuffle
+   * @param lo the left endpoint (inclusive)
+   * @param hi the right endpoint (inclusive)
+   * @throws NullPointerException      if <tt>a</tt> is <tt>null</tt>
    * @throws IndexOutOfBoundsException unless <tt>(0 <= lo) && (lo <= hi) && (hi < a.length)</tt>
    */
   public void shuffle(int[] a, int lo, int hi) {

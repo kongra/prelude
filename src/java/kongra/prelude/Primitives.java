@@ -7,6 +7,9 @@ import clojure.lang.RT;
 
 public final class Primitives {
 
+  private Primitives() {
+  }
+
   public static Boolean bnot(Boolean b) {
     return !b.booleanValue();
   }
@@ -34,7 +37,5 @@ public final class Primitives {
   public static boolean isObjects(Object x) {
     return x instanceof Object[];
   }
-
-  private Primitives () { }
 
 }

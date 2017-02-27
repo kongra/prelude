@@ -3,16 +3,23 @@
 
 package kongra.prelude;
 
+import clojure.lang.ISeq;
+import clojure.lang.Ratio;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import clojure.lang.ISeq;
-import clojure.lang.Ratio;
-
 public final class Bits {
+
+  private static final double LN2 = Math.log(2);
+  private static final Long ZERO = 0L;
+  private static final Long ONE = 1L;
+
+  private Bits() {
+  }
 
   public static boolean getBoolean(byte[] b, int off) {
     return b[off] != 0;
@@ -32,42 +39,42 @@ public final class Bits {
 
   public static int getInt(byte[] b, int off) {
     return ((b[off + 3] & 0xFF) << 0) + ((b[off + 2] & 0xFF) << 8)
-        + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0]) << 24);
+             + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0]) << 24);
   }
 
   public static float getFloat(byte[] b, int off) {
     int i =
-        ((b[off + 3] & 0xFF) << 0) + ((b[off + 2] & 0xFF) << 8)
-            + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0]) << 24);
+      ((b[off + 3] & 0xFF) << 0) + ((b[off + 2] & 0xFF) << 8)
+        + ((b[off + 1] & 0xFF) << 16) + ((b[off + 0]) << 24);
     return Float.intBitsToFloat(i);
   }
 
   public static long getLong(byte[] b, int off) {
     return ((b[off + 7] & 0xFFL) << 0) + ((b[off + 6] & 0xFFL) << 8)
-        + ((b[off + 5] & 0xFFL) << 16) + ((b[off + 4] & 0xFFL) << 24)
-        + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40)
-        + ((b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
+             + ((b[off + 5] & 0xFFL) << 16) + ((b[off + 4] & 0xFFL) << 24)
+             + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40)
+             + ((b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
   }
 
   public static long getUInt48(byte[] b, int off) {
     return ((b[off + 5] & 0xFFL) << 0) + ((b[off + 4] & 0xFFL) << 8)
-        + ((b[off + 3] & 0xFFL) << 16) + ((b[off + 2] & 0xFFL) << 24)
-        + ((b[off + 1] & 0xFFL) << 32) + ((b[off + 0] & 0xFFL) << 40);
+             + ((b[off + 3] & 0xFFL) << 16) + ((b[off + 2] & 0xFFL) << 24)
+             + ((b[off + 1] & 0xFFL) << 32) + ((b[off + 0] & 0xFFL) << 40);
   }
 
   public static double getDouble(byte[] b, int off) {
     long j =
-        ((b[off + 7] & 0xFFL) << 0) + ((b[off + 6] & 0xFFL) << 8)
-            + ((b[off + 5] & 0xFFL) << 16) + ((b[off + 4] & 0xFFL) << 24)
-            + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40)
-            + ((b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
+      ((b[off + 7] & 0xFFL) << 0) + ((b[off + 6] & 0xFFL) << 8)
+        + ((b[off + 5] & 0xFFL) << 16) + ((b[off + 4] & 0xFFL) << 24)
+        + ((b[off + 3] & 0xFFL) << 32) + ((b[off + 2] & 0xFFL) << 40)
+        + ((b[off + 1] & 0xFFL) << 48) + (((long) b[off + 0]) << 56);
     return Double.longBitsToDouble(j);
   }
 
   /**
    * Returns a bitset containing the values in bytes. The byte-ordering of bytes
    * must be big-endian which means the most significant bit is in element 0.
-   *
+   * <p>
    * <p>
    * Source: http://www.exampledepot.com/egs/java.util/Bits2Array.html
    *
@@ -209,7 +216,7 @@ public final class Bits {
    * extension). The byte-ordering of the result is big-endian which means the
    * most significant bit is in element 0. The bit at index 0 of the bit set is
    * assumed to be the least significant bit.
-   *
+   * <p>
    * <p>
    * Source: http://www.exampledepot.com/egs/java.util/Bits2Array.html
    *
@@ -226,11 +233,8 @@ public final class Bits {
     return bytes;
   }
 
-  private static final double LN2 = Math.log(2);
-
   /**
-   * @param n
-   *          either negative or non-negative
+   * @param n either negative or non-negative
    * @return bit length for n
    */
   public static int bitLength(long n) {
@@ -239,13 +243,8 @@ public final class Bits {
     return (int) Math.ceil(lg2);
   }
 
-  private static final Long ZERO = 0L;
-
-  private static final Long ONE = 1L;
-
   /**
-   * @param n
-   *          must be non-negative
+   * @param n must be non-negative
    * @return a list of little-endian bits for the argument n
    */
   public static List<Long> longBits(long n) {
@@ -261,8 +260,7 @@ public final class Bits {
     while (n != 0) {
       if (n % 2 == 0) {
         result.add(ZERO);
-      }
-      else {
+      } else {
         result.add(ONE);
       }
       n = n >> 1;
@@ -276,8 +274,7 @@ public final class Bits {
    * non-ASCII (16 bit).
    *
    * @param str
-   * @param offset
-   *          if you want to skip some (offset) chars from the start of str
+   * @param offset if you want to skip some (offset) chars from the start of str
    * @return
    */
   public static byte[] stringToBytesUTF(String str, int offset) {
@@ -304,7 +301,7 @@ public final class Bits {
     for (int i = 0; i < buffer.length; i++) {
       int bpos = i << 1;
       char c =
-          (char) (((bytes[bpos] & 0x00FF) << 8) + (bytes[bpos + 1] & 0x00FF));
+        (char) (((bytes[bpos] & 0x00FF) << 8) + (bytes[bpos + 1] & 0x00FF));
       buffer[i] = c;
     }
     return new String(buffer);
@@ -313,7 +310,7 @@ public final class Bits {
   public static long[] bytesToLongsArray(byte[] bytes) {
     if (bytes.length % 8 != 0) {
       throw new IllegalArgumentException(
-          "The length of byte array must be a multiple of 8.");
+                                          "The length of byte array must be a multiple of 8.");
     }
     long[] result = new long[bytes.length / 8];
     for (int i = 0; i < result.length; i++) {
@@ -325,7 +322,7 @@ public final class Bits {
   public static List<Long> bytesToLongsList(byte[] bytes) {
     if (bytes.length % 8 != 0) {
       throw new IllegalArgumentException(
-          "The length of byte array must be a multiple of 8.");
+                                          "The length of byte array must be a multiple of 8.");
     }
     int n = bytes.length / 8;
     List<Long> result = new ArrayList<Long>(n);
@@ -404,9 +401,5 @@ public final class Bits {
     System.arraycopy(bytes, 4 + numerlen, denom, 0, denomlen);
 
     return new Ratio(new BigInteger(numer), new BigInteger(denom));
-  }
-
-  private Bits() {
-    ;
   }
 }

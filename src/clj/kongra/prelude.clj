@@ -80,22 +80,22 @@
   (chMaybe chString s)
   (chBoolean (not (blank? s))))
 
-(deftype ^:private NonBlank [s] java.lang.Object (toString [_] s))
-(defchC          chNonBlank NonBlank)
-(defn          consNonBlank [s] (ch not-blank? s) (NonBlank. s))
+(deftype  NonBlank [s] java.lang.Object (toString [_] s))
+(defchC chNonBlank NonBlank)
+(defn consNonBlank [s] (ch not-blank? s) (NonBlank. s))
 
 (defn strip
   [s]
   (chMaybe chString s)
   (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
 
-(deftype ^:private Stripped [s] java.lang.Object (toString [_] s))
-(defchC          chStripped Stripped)
-(defn          consStripped [s] (Stripped. (strip s)))
+(deftype  Stripped [s] java.lang.Object (toString [_] s))
+(defchC chStripped Stripped)
+(defn consStripped [s] (Stripped. (strip s)))
 
-(deftype ^:private StrippedNonBlank [s] java.lang.Object (toString [_] s))
-(defchC          chStrippedNonBlank StrippedNonBlank)
-(defn          consStrippedNonBlank [s]
+(deftype  StrippedNonBlank [s] java.lang.Object (toString [_] s))
+(defchC chStrippedNonBlank StrippedNonBlank)
+(defn consStrippedNonBlank [s]
   (StrippedNonBlank. (ch not-blank? (strip s))))
 
 (defn indent-string

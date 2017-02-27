@@ -91,36 +91,3 @@
    (chSeq (->> (breadth-first-tree-levels start adjs)
                (take  depth)
                (apply concat)))))
-
-;; TESTS
-
-;; (def ADJS
-;;   '{a (b c d)
-;;     b (e f)
-;;     d (g h)
-;;     g (i j k)
-;;     h (l ł m)
-;;     k (o p q)})
-
-;; (defn test0
-;;   []
-;;   (tree-search
-;;    'a
-;;    (consGoal #(= % 'p))
-;;    (consAdjs #(or (ADJS %) '()))
-;;    lazy-breadth-first-combiner))
-
-;; (defn test1
-;;   []
-;;   (breadth-first-search
-;;    'a
-;;    (consGoal #(= % 'p))
-;;    (consAdjs #(or (ADJS %) '()))))
-
-;; (defn test2
-;;   []
-;;   (doall (breadth-first-tree-levels 'a (consAdjs #(or (ADJS %) '())))))
-
-;; (defn test3
-;;   []
-;;   (doall (breadth-first-tree-seq 'a (consAdjs #(or (ADJS %) '())) 0)))
