@@ -1,4 +1,4 @@
-(defproject kongra/prelude "0.1.0-SNAPSHOT"
+(defproject kongra/prelude "0.1.1"
   :description      "Predule codebase for Clojure"
   :url              "https://github.com/kongra/prelude"
   :license          {:name   "Eclipse Public License"
@@ -10,7 +10,7 @@
                      [org.uncommons.maths/uncommons-maths "1.2.2a"]
                      [kongra/ch                            "0.1.0"]]
 
-  :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
+  ;; :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
 
   :aot               :all
 
