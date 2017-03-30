@@ -174,10 +174,6 @@
   {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
   (kongra.prelude.Primitives/bnot b))
 
-(defn not-nil?
-  [x]
-  (bnot (ref= x nil)))
-
 (defmacro synchronized {:style/indent 1}
   [monitor & body]
   `(kongra.prelude.Synchronized/invoke
