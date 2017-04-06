@@ -138,11 +138,12 @@
   (chSeq (longs< 0)))
 
 (defn mark-last
-  "Takes a sequence (e0 e1 ... en) and returns (false false ... true)
-  or (false false ...) if the argument is infinite."
+  "Takes (e0 e1 ... en) and returns (false false ... true) or (false false ...)
+  if the argument is infinite."
   [xs]
+  (chSequential xs)
   (chSeq
-   (if-not (seq (chSequential xs))
+   (if-not (seq xs)
      '()
      (let [[_ & others] xs]
        (if-not (seq others)
@@ -153,7 +154,8 @@
   "Adds v to a collection that is a value for k in m. Uses empty-coll
   when no collection for k in m."
   [m k v empty-coll]
-  (chAssoc m) (chColl empty-coll)
+  (chAssoc         m)
+  (chColl empty-coll)
   (chAssoc (assoc m k (conj (get m k empty-coll) v))))
 
 (defn vec-remove
@@ -235,11 +237,11 @@
 
 (defn Kleene-not ;:- Kleene -> Kleene
   [x]
+  (chKleene x)
   (chKleene
-   (let [x (chKleene x)]
-     (cond (ref= KleeneTrue  x) KleeneFalse
-           (ref= KleeneFalse x) KleeneTrue
-           :else                KleeneUndefined))))
+   (cond (ref= KleeneTrue  x) KleeneFalse
+         (ref= KleeneFalse x) KleeneTrue
+         :else                KleeneUndefined)))
 
 (defmacro Kleene-and
   ([]  `(chKleene KleeneTrue))
@@ -280,9 +282,10 @@
 
 (defn make-MersenneTwister
   [^long seed]
-  (chRandom (let [bs (byte-array 16)]
-              (kongra.prelude.Bits/putLong bs 0 seed)
-              (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
+  (chRandom
+   (let [bs (byte-array 16)]
+     (kongra.prelude.Bits/putLong bs 0 seed)
+     (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
 
 (def ^:private randist-state
   (atom (kongra.prelude.Randist. (make-MersenneTwister 0))))

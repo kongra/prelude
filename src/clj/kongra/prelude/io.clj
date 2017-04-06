@@ -20,7 +20,8 @@
 
 (extend-type InputStream
   ToInputStream
-  (input-stream [this] this))
+  (input-stream [this]
+    (chInputStream this)))
 
 (extend-type String
   ToInputStream

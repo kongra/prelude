@@ -25,9 +25,10 @@
 
 (defn ensure
   []
-  (chDoclean (if-let [d *doclean*]
-               d
-               (throw (IllegalStateException. "No *doclean*")))))
+  (chDoclean
+   (if-let [d *doclean*]
+     d
+     (throw (IllegalStateException. "No *doclean*")))))
 
 (defn register!
   ([^kongra.prelude.Doclean d f]
@@ -35,4 +36,5 @@
    (chUnit (.register d (reify java.io.Closeable (close [this] (f))))))
 
   ([f]
-   (chUnit (register! (ensure) (chIfn f)))))
+   (chIfn f)
+   (chUnit (register! (ensure) f))))
