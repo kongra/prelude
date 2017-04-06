@@ -156,7 +156,7 @@
   [m k v empty-coll]
   (chAssoc         m)
   (chColl empty-coll)
-  (chAssoc (assoc m k (conj (get m k empty-coll) v))))
+  (chAssoc (assoc m k (conj (chColl (get m k empty-coll)) v))))
 
 (defn vec-remove
   "Returns a vector that is a result of removing n-th element from the
