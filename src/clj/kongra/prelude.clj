@@ -11,7 +11,7 @@
 (defn nat-long? [^long n] (p/>= n 0))
 
 (defch chPoslong `(ch pos-long?))
-(defch chNatlong `(ch pos-long?))
+(defch chNatlong `(ch nat-long?))
 
 (defn pos-Long?
   [n]

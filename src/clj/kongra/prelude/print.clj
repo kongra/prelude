@@ -98,11 +98,13 @@
   [adjs v]
   (chIfn adjs)
   (chSequential
-      (when-not (instance? PrintGraphEllipsis v)
-        (->> (adjs v)
-             (map #(if (@*print-graph-visited* %)
-                     (PrintGraphEllipsis. %)
-                     %))))))
+   (if-not (instance? PrintGraphEllipsis v)
+     (map
+      #(if (@*print-graph-visited* %) (PrintGraphEllipsis. %) %)
+      (adjs v))
+
+     ;; no adjs for ellipsis
+     '())))
 
 (defn print-graph
   ([v adjs show depth]
