@@ -1,4 +1,4 @@
-(defproject kongra/prelude "0.1.5"
+(defproject kongra/prelude "0.1.6"
   :description      "Predule codebase for Clojure"
   :url              "https://github.com/kongra/prelude"
   :license          {:name   "Eclipse Public License"
