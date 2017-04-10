@@ -6,11 +6,12 @@
 
   :dependencies     [[org.clojure/clojure                  "1.8.0"]
                      [primitive-math                       "0.1.5"]
+                     [org.clojure/math.numeric-tower       "0.0.4"]
                      [org.apache.commons/commons-lang3       "3.5"]
                      [org.uncommons.maths/uncommons-maths "1.2.2a"]
                      [kongra/ch                            "0.1.3"]]
 
-  ;; :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
+  :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
 
   :aot               :all
 

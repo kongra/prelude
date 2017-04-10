@@ -2,8 +2,10 @@
 ;; Created 2016-09-26
 
 (ns kongra.prelude
-  (:require [primitive-math :as       p]
-            [kongra.ch      :refer :all]))
+  (:require [primitive-math             :as p]
+            [clojure.math.numeric-tower :as m]
+
+            [kongra.ch :refer :all]))
 
 ;; POSITIVE/NATURAL INTEGRALS
 
@@ -304,3 +306,32 @@
 (defmacro randgen!
   [method & args]
   `(~method (randist) ~@args))
+
+
+;; BASIC MATH
+
+(defn **
+  "Convenience wrapper around clojure.contrib.ccmath/expt."
+  [base pow]
+  (chNumber base)
+  (chNumber  pow)
+  (chNumber (m/expt base pow)))
+
+(defn **-N
+  "x to the power of n such that n is a Natural long"
+  ([x ^long n] (**-N *' x n))
+
+  ([multop x ^long n]
+   (chNumber   x)
+   (chNatlong  n)
+   (chIfn multop)
+   (chNumber
+       (loop [x x n n result (Long/valueOf 1)]
+         (cond (p/zero? n)
+               result
+
+               (kongra.prelude.Maths/isEven n)
+               (recur (multop x x) (p// n 2) result)
+
+               :else
+               (recur x (p/dec n) (multop x result)))))))

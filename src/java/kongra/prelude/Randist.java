@@ -117,7 +117,7 @@ public class Randist {
     } while (r >= 1 || r == 0);
     return x * Math.sqrt(-2 * Math.log(r) / r);
 
-    // Remark:  y * Math.sqrt(-2 * Math.log(r) / r)
+    // Remark:  y * Maths.sqrt(-2 * Maths.log(r) / r)
     // is an independent random gaussian
   }
 
