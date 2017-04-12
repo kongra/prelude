@@ -7,25 +7,6 @@
 
             [kongra.ch :refer :all]))
 
-;; POSITIVE/NATURAL INTEGRALS
-
-(defn pos-long? [^long n] (p/>  n 0))
-(defn nat-long? [^long n] (p/>= n 0))
-
-(defch chPoslong `(ch pos-long?))
-(defch chNatlong `(ch nat-long?))
-
-(defn pos-Long?
-  [n]
-  (and (chLong nil n) (pos-long? (.longValue ^Long n))))
-
-(defn nat-Long?
-  [n]
-  (and (chLong nil n) (nat-long? (.longValue ^Long n))))
-
-(defch chPosLong `(ch pos-Long?))
-(defch chNatLong `(ch nat-Long?))
-
 ;; SYS/JVM
 
 (defn room
