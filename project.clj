@@ -9,7 +9,7 @@
                      [org.clojure/math.numeric-tower       "0.0.4"]
                      [org.apache.commons/commons-lang3       "3.5"]
                      [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                     [kongra/ch                            "0.1.5"]]
+                     [kongra/ch                            "0.1.6"]]
 
   :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
 
