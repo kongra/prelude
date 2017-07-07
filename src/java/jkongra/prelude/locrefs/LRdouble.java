@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRfloat {
+public class LRdouble {
 
-  public float value;
+  public double value;
 
-  public LRfloat(float value) {
+  public LRdouble(double value) {
     this.value = value;
   }
 
-  public void set(float value) {
+  public void set(double value) {
     this.value = value;
   }
 

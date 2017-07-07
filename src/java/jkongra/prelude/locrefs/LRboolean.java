@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRshort {
+public final class LRboolean {
 
-  public short value;
+  public boolean value;
 
-  public LRshort(short value) {
+  public LRboolean(boolean value) {
     this.value = value;
   }
 
-  public void set(short value) {
+  public void set(boolean value) {
     this.value = value;
   }
 

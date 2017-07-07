@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRdouble {
+public class LRshort {
 
-  public double value;
+  public short value;
 
-  public LRdouble(double value) {
+  public LRshort(short value) {
     this.value = value;
   }
 
-  public void set(double value) {
+  public void set(short value) {
     this.value = value;
   }
 

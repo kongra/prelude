@@ -13,57 +13,57 @@
 ;; CONSTRUCTORS
 
 (defn boolean
-  {:inline (fn [b] `(kongra.prelude.locrefs.LRboolean. ~b))}
+  {:inline (fn [b] `(jkongra.prelude.locrefs.LRboolean. ~b))}
   [b]
-  (kongra.prelude.locrefs.LRboolean. (clojure.core/boolean b)))
+  (jkongra.prelude.locrefs.LRboolean. (clojure.core/boolean b)))
 
 
 (defn byte
-  {:inline (fn [b] `(kongra.prelude.locrefs.LRbyte. ~b))}
+  {:inline (fn [b] `(jkongra.prelude.locrefs.LRbyte. ~b))}
   [b]
-  (kongra.prelude.locrefs.LRbyte. (clojure.core/byte b)))
+  (jkongra.prelude.locrefs.LRbyte. (clojure.core/byte b)))
 
 
 (defn short
-  {:inline (fn [s] `(kongra.prelude.locrefs.LRshort. ~s))}
+  {:inline (fn [s] `(jkongra.prelude.locrefs.LRshort. ~s))}
   [s]
-  (kongra.prelude.locrefs.LRshort. (clojure.core/short s)))
+  (jkongra.prelude.locrefs.LRshort. (clojure.core/short s)))
 
 
 (defn char
-  {:inline (fn [c] `(kongra.prelude.locrefs.LRchar. ~c))}
+  {:inline (fn [c] `(jkongra.prelude.locrefs.LRchar. ~c))}
   [c]
-  (kongra.prelude.locrefs.LRchar. (clojure.core/char c)))
+  (jkongra.prelude.locrefs.LRchar. (clojure.core/char c)))
 
 
 (defn int
-  {:inline (fn [n] `(kongra.prelude.locrefs.LRint. ~n))}
+  {:inline (fn [n] `(jkongra.prelude.locrefs.LRint. ~n))}
   [n]
-  (kongra.prelude.locrefs.LRint. (clojure.core/int n)))
+  (jkongra.prelude.locrefs.LRint. (clojure.core/int n)))
 
 
 (defn long
-  {:inline (fn [n] `(kongra.prelude.locrefs.LRlong. ~n))}
+  {:inline (fn [n] `(jkongra.prelude.locrefs.LRlong. ~n))}
   [n]
-  (kongra.prelude.locrefs.LRlong. (clojure.core/long n)))
+  (jkongra.prelude.locrefs.LRlong. (clojure.core/long n)))
 
 
 (defn float
-  {:inline (fn [x] `(kongra.prelude.locrefs.LRfloat. ~x))}
+  {:inline (fn [x] `(jkongra.prelude.locrefs.LRfloat. ~x))}
   [x]
-  (kongra.prelude.locrefs.LRfloat. (clojure.core/float x)))
+  (jkongra.prelude.locrefs.LRfloat. (clojure.core/float x)))
 
 
 (defn double
-  {:inline (fn [x] `(kongra.prelude.locrefs.LRdouble. ~x))}
+  {:inline (fn [x] `(jkongra.prelude.locrefs.LRdouble. ~x))}
   [x]
-  (kongra.prelude.locrefs.LRdouble. (clojure.core/double x)))
+  (jkongra.prelude.locrefs.LRdouble. (clojure.core/double x)))
 
 
 (defn obj
-  {:inline (fn [x] `(kongra.prelude.locrefs.LRobject. ~x))}
+  {:inline (fn [x] `(jkongra.prelude.locrefs.LRobject. ~x))}
   [x]
-  (kongra.prelude.locrefs.LRobject. x))
+  (jkongra.prelude.locrefs.LRobject. x))
 
 
 ;; ACCESSORS

@@ -156,12 +156,12 @@
   (chBoolean (clojure.lang.Util/identical x y)))
 
 (defn bnot [b]
-  {:inline (fn [b] `(kongra.prelude.Primitives/bnot ~b))}
-  (kongra.prelude.Primitives/bnot b))
+      {:inline (fn [b] `(jkongra.prelude.Primitives/bnot ~b))}
+      (jkongra.prelude.Primitives/bnot b))
 
 (defmacro synchronized {:style/indent 1}
   [monitor & body]
-  `(kongra.prelude.Synchronized/invoke
+  `(jkongra.prelude.Synchronized/invoke
     (chSome ~monitor)
     (fn [] ~@body)))
 
@@ -173,34 +173,34 @@
 ;; ARRAYS AND RELATED CHECKS
 
 (defn make-longs ^longs
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeLongs ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeLongs size))
+  {:inline (fn [size] `(jkongra.prelude.Primitives/makeLongs ~size))}
+      [^long size]
+      (jkongra.prelude.Primitives/makeLongs size))
 
 (defn make-doubles ^doubles
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeDoubles ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeDoubles size))
+  {:inline (fn [size] `(jkongra.prelude.Primitives/makeDoubles ~size))}
+      [^long size]
+      (jkongra.prelude.Primitives/makeDoubles size))
 
 (defn make-objects ^objects
-  {:inline (fn [size] `(kongra.prelude.Primitives/makeObjects ~size))}
-  [^long size]
-  (kongra.prelude.Primitives/makeObjects size))
+  {:inline (fn [size] `(jkongra.prelude.Primitives/makeObjects ~size))}
+      [^long size]
+      (jkongra.prelude.Primitives/makeObjects size))
 
 (defn longs?
-  {:inline (fn [x] `(kongra.prelude.Primitives/isLongs ~x))}
-  [x]
-  (kongra.prelude.Primitives/isLongs x))
+      {:inline (fn [x] `(jkongra.prelude.Primitives/isLongs ~x))}
+      [x]
+      (jkongra.prelude.Primitives/isLongs x))
 
 (defn doubles?
-  {:inline (fn [x] `(kongra.prelude.Primitives/isDoubles ~x))}
-  [x]
-  (kongra.prelude.Primitives/isDoubles x))
+      {:inline (fn [x] `(jkongra.prelude.Primitives/isDoubles ~x))}
+      [x]
+      (jkongra.prelude.Primitives/isDoubles x))
 
 (defn objects?
-  {:inline (fn [x] `(kongra.prelude.Primitives/isObjects ~x))}
-  [x]
-  (kongra.prelude.Primitives/isObjects x))
+      {:inline (fn [x] `(jkongra.prelude.Primitives/isObjects ~x))}
+      [x]
+      (jkongra.prelude.Primitives/isObjects x))
 
 (defch chLongs   `(ch   longs?))
 (defch chDoubles `(ch doubles?))
@@ -256,8 +256,8 @@
 
 ;; PSEUDORANDOM NUMBERS GENERATORS
 
-(defchC chRandom        java.util.Random)
-(defchC chRandist kongra.prelude.Randist)
+(defchC chRandom         java.util.Random)
+(defchC chRandist jkongra.prelude.Randist)
 
 (defn uuid!
   []
@@ -267,13 +267,13 @@
   [^long seed]
   (chRandom
    (let [bs (byte-array 16)]
-     (kongra.prelude.Bits/putLong bs 0 seed)
+     (jkongra.prelude.Bits/putLong bs 0 seed)
      (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
 
 (def ^:private randist-state
-  (atom (kongra.prelude.Randist. (make-MersenneTwister 0))))
+  (atom (jkongra.prelude.Randist. (make-MersenneTwister 0))))
 
-(defn ^kongra.prelude.Randist randist
+(defn ^jkongra.prelude.Randist randist
   []
   (chRandist (deref (chAtom randist-state))))
 
@@ -281,7 +281,7 @@
   [^long seed]
   (chUnit
    (do (reset! (chAtom randist-state)
-               (kongra.prelude.Randist.(chRandom (make-MersenneTwister seed))))
+               (jkongra.prelude.Randist. (chRandom (make-MersenneTwister seed))))
        nil)))
 
 (defmacro randgen!
@@ -311,8 +311,22 @@
          (cond (p/zero? n)
                result
 
-               (kongra.prelude.Maths/isEven n)
+               (jkongra.prelude.Maths/isEven n)
                (recur (multop x x) (p// n 2) result)
 
                :else
                (recur x (p/dec n) (multop x result)))))))
+
+;; LOCREFS CHECKS
+;; Defined here and not in the original kongra.prelude.locrefs for convenience
+;; of use when requiring :all kongra.prelude
+
+(defchC chLRboolean jkongra.prelude.locrefs.LRboolean)
+(defchC chLRbyte jkongra.prelude.locrefs.LRbyte)
+(defchC chLRshort jkongra.prelude.locrefs.LRshort)
+(defchC chLRchar jkongra.prelude.locrefs.LRchar)
+(defchC chLRint jkongra.prelude.locrefs.LRint)
+(defchC chLRlong jkongra.prelude.locrefs.LRlong)
+(defchC chLRfloat jkongra.prelude.locrefs.LRfloat)
+(defchC chLRdouble jkongra.prelude.locrefs.LRdouble)
+(defchC chLRobject jkongra.prelude.locrefs.LRobject)

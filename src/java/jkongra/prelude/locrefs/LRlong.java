@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRbyte {
+public class LRlong {
 
-  public byte value;
+  public long value;
 
-  public LRbyte(byte value) {
+  public LRlong(long value) {
     this.value = value;
   }
 
-  public void set(byte value) {
+  public void set(long value) {
     this.value = value;
   }
 

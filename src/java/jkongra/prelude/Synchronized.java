@@ -2,7 +2,7 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2009-11-08
  */
-package kongra.prelude;
+package jkongra.prelude;
 
 import clojure.lang.IFn;
 

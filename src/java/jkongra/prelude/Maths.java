@@ -1,6 +1,6 @@
 // Copyright (c) 2016-present Konrad Grzanek
 // Created 2017-10-10
-package kongra.prelude;
+package jkongra.prelude;
 
 public class Maths {
 

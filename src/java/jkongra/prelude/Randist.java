@@ -1,7 +1,7 @@
 // Copyright (c) Konrad Grzanek. All rights reserved.
 // Created 2016-02-25
 
-package kongra.prelude;
+package jkongra.prelude;
 
 import java.util.Random;
 

@@ -1,18 +1,18 @@
 /*
  * Copyright (c) Konrad Grzanek. All rights reserved.
- * Created 2015-12-19
+ * Created 2016-03-11
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public final class LRboolean {
+public class LRobject {
 
-  public boolean value;
+  public Object value;
 
-  public LRboolean(boolean value) {
+  public LRobject(Object value) {
     this.value = value;
   }
 
-  public void set(boolean value) {
+  public void set(Object value) {
     this.value = value;
   }
 
@@ -20,5 +20,4 @@ public final class LRboolean {
   public String toString() {
     return String.valueOf(value);
   }
-
 }

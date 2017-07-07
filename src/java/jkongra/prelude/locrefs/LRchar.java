@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRint {
+public class LRchar {
 
-  public int value;
+  public char value;
 
-  public LRint(int value) {
+  public LRchar(char value) {
     this.value = value;
   }
 
-  public void set(int value) {
+  public void set(char value) {
     this.value = value;
   }
 

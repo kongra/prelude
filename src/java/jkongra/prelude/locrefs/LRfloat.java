@@ -2,17 +2,17 @@
  * Copyright (c) Konrad Grzanek. All rights reserved.
  * Created 2015-12-19
  */
-package kongra.prelude.locrefs;
+package jkongra.prelude.locrefs;
 
-public class LRlong {
+public class LRfloat {
 
-  public long value;
+  public float value;
 
-  public LRlong(long value) {
+  public LRfloat(float value) {
     this.value = value;
   }
 
-  public void set(long value) {
+  public void set(float value) {
     this.value = value;
   }
 
