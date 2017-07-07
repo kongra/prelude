@@ -5,11 +5,11 @@
                      :url    "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies     [[org.clojure/clojure                  "1.8.0"]
-                     [primitive-math                       "0.1.5"]
+                     [primitive-math                       "0.1.6"]
                      [org.clojure/math.numeric-tower       "0.0.4"]
-                     [org.apache.commons/commons-lang3       "3.5"]
+                     [org.apache.commons/commons-lang3       "3.6"]
                      [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                     [kongra/ch                            "0.1.6"]]
+                     [kongra/ch                            "0.1.7"]]
 
   :profiles {:repl  {:plugins [[lein-nodisassemble "0.1.3"]]}}
 
