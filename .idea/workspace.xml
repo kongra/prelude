@@ -1,25 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0d9abbbf-29b0-4fdb-9af9-735499c6b245" name="Default" comment="">
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Bits.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Bits.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Doclean.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Doclean.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Maths.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Maths.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Primitives.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Primitives.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Randist.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Randist.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/Synchronized.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/Synchronized.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRboolean.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRboolean.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRbyte.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRbyte.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRchar.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRchar.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRdouble.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRdouble.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRfloat.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRfloat.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRint.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRint.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRlong.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRlong.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRobject.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRobject.java" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/java/kongra/prelude/locrefs/LRshort.java" afterPath="$PROJECT_DIR$/src/java/jkongra/prelude/locrefs/LRshort.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/clj/kongra/prelude.clj" afterPath="$PROJECT_DIR$/src/clj/kongra/prelude.clj" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/clj/kongra/prelude/doclean.clj" afterPath="$PROJECT_DIR$/src/clj/kongra/prelude/doclean.clj" />
-    </list>
+    <list default="true" id="0d9abbbf-29b0-4fdb-9af9-735499c6b245" name="Default" comment="" />
     <ignored path="prelude.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/out/" />
