@@ -43,6 +43,7 @@ public class Randist {
    * @return a random real number uniformly in [0, 1)
    * @deprecated Replaced by {@link #uniform()}.
    */
+  @Deprecated
   public double random() {
     return uniform();
   }
