@@ -26,13 +26,13 @@
   (chBoolean                  is-last)
   (chMaybe chSequential last-child-infos)
   (chString
-      (let [suffix (if is-last PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
-            prefix (->> last-child-infos
-                        butlast
-                        reverse
-                        (map print-tree-indent-symbol)
-                        (apply str))]
-        (str prefix suffix))))
+   (let [suffix (if is-last PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
+         prefix (->> last-child-infos
+                     butlast
+                     reverse
+                     (map print-tree-indent-symbol)
+                     (apply str))]
+     (str prefix suffix))))
 
 (defn ^:private print-tree-impl
   [node adjs show ^Long depth ^Long level last-child-infos is-first]
@@ -43,20 +43,20 @@
   (chSequential last-child-infos)
   (chBoolean            is-first)
   (chUnit
-      (let [s    (chString (show node))
-            pfx  (if is-first PRINT-TREE-EMPTY PRINT-TREE-EOL)
-            repr (if (p/zero? (.longValue level))
-                   (str pfx s)
-                   (str pfx (print-tree-genindent last-child-infos) s))]
+   (let [s    (chString (show node))
+         pfx  (if is-first PRINT-TREE-EMPTY PRINT-TREE-EOL)
+         repr (if (p/zero? (.longValue level))
+                (str pfx s)
+                (str pfx (print-tree-genindent last-child-infos) s))]
 
-        (print repr)
+     (print repr)
 
-        (when-not (p/== (.longValue level) (.longValue depth))
-          (let [next-level (p/inc level)
-                children   (chSequential (adjs node))]
-            (doseq [[child is-last] (map vector children (mark-last children))]
-              (print-tree-impl child adjs show depth next-level
-                               (cons is-last last-child-infos) false)))))))
+     (when-not (p/== (.longValue level) (.longValue depth))
+       (let [next-level (p/inc level)
+             children   (chSequential (adjs node))]
+         (doseq [[child is-last] (map vector children (mark-last children))]
+           (print-tree-impl child adjs show depth next-level
+                            (cons is-last last-child-infos) false)))))))
 
 (defn print-tree
   "Prints a tree using a textual representation like in UNIX tree command.

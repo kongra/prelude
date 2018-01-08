@@ -156,8 +156,8 @@
   (chBoolean (clojure.lang.Util/identical x y)))
 
 (defn bnot [b]
-      {:inline (fn [b] `(jkongra.prelude.Primitives/bnot ~b))}
-      (jkongra.prelude.Primitives/bnot b))
+  {:inline (fn [b] `(jkongra.prelude.Primitives/bnot ~b))}
+  (jkongra.prelude.Primitives/bnot b))
 
 (defmacro synchronized {:style/indent 1}
   [monitor & body]
@@ -174,33 +174,33 @@
 
 (defn make-longs ^longs
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeLongs ~size))}
-      [^long size]
-      (jkongra.prelude.Primitives/makeLongs size))
+  [^long size]
+  (jkongra.prelude.Primitives/makeLongs size))
 
 (defn make-doubles ^doubles
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeDoubles ~size))}
-      [^long size]
-      (jkongra.prelude.Primitives/makeDoubles size))
+  [^long size]
+  (jkongra.prelude.Primitives/makeDoubles size))
 
 (defn make-objects ^objects
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeObjects ~size))}
-      [^long size]
-      (jkongra.prelude.Primitives/makeObjects size))
+  [^long size]
+  (jkongra.prelude.Primitives/makeObjects size))
 
 (defn longs?
-      {:inline (fn [x] `(jkongra.prelude.Primitives/isLongs ~x))}
-      [x]
-      (jkongra.prelude.Primitives/isLongs x))
+  {:inline (fn [x] `(jkongra.prelude.Primitives/isLongs ~x))}
+  [x]
+  (jkongra.prelude.Primitives/isLongs x))
 
 (defn doubles?
-      {:inline (fn [x] `(jkongra.prelude.Primitives/isDoubles ~x))}
-      [x]
-      (jkongra.prelude.Primitives/isDoubles x))
+  {:inline (fn [x] `(jkongra.prelude.Primitives/isDoubles ~x))}
+  [x]
+  (jkongra.prelude.Primitives/isDoubles x))
 
 (defn objects?
-      {:inline (fn [x] `(jkongra.prelude.Primitives/isObjects ~x))}
-      [x]
-      (jkongra.prelude.Primitives/isObjects x))
+  {:inline (fn [x] `(jkongra.prelude.Primitives/isObjects ~x))}
+  [x]
+  (jkongra.prelude.Primitives/isObjects x))
 
 (defch chLongs   `(ch   longs?))
 (defch chDoubles `(ch doubles?))
@@ -307,15 +307,15 @@
    (chNatlong  n)
    (chIfn multop)
    (chNumber
-       (loop [x x n n result (Long/valueOf 1)]
-         (cond (p/zero? n)
-               result
+    (loop [x x n n result (Long/valueOf 1)]
+      (cond (p/zero? n)
+            result
 
-               (jkongra.prelude.Maths/isEven n)
-               (recur (multop x x) (p// n 2) result)
+            (jkongra.prelude.Maths/isEven n)
+            (recur (multop x x) (p// n 2) result)
 
-               :else
-               (recur x (p/dec n) (multop x result)))))))
+            :else
+            (recur x (p/dec n) (multop x result)))))))
 
 ;; LOCREFS CHECKS
 ;; Defined here and not in the original kongra.prelude.locrefs for convenience

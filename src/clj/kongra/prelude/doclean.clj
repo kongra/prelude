@@ -7,7 +7,6 @@
   (:require [kongra.ch :refer :all]))
 
 ;; CLEANUP CONTEXT
-
 (defchC chDoclean jkongra.prelude.Doclean)
 
 (defn ^jkongra.prelude.Doclean create [ ] (jkongra.prelude.Doclean.))

@@ -8,11 +8,9 @@
             [java.nio.charset                 Charset]))
 
 ;; SYSTEM-WIDE CHARACTER ENCODING
-
 (def ^Charset ENCODING (chC Charset (Charset/forName "UTF-8")))
 
 ;; CONVERSION TO InputStream
-
 (defchC chInputStream InputStream) (regch chInputStream)
 
 (defprotocol ToInputStream
