@@ -294,9 +294,11 @@
 (defn **
   "Convenience wrapper around clojure.contrib.ccmath/expt."
   [base pow]
-  (chNumber base)
-  (chNumber  pow)
-  (chNumber (m/expt base pow)))
+  (chNumber
+      (do
+        (chNumber base)
+        (chNumber  pow)
+        (m/expt base pow))))
 
 (defn **-N
   "x to the power of n such that n is a Natural long"
