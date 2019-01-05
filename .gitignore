@@ -2,6 +2,7 @@
 *.jar
 .lein*
 .nrepl-port
+.rebel_readline_history
 /checkouts/
 /classes/
 /doc/
