@@ -1,15 +1,19 @@
 ;; Copyright (c) 2016-present Konrad Grzanek
 ;; Created 2016-10-11
+(ns clojure.kongra.prelude.search
+  (:require
+   [clojure.kongra.ch
+    :refer [chIfn chMaybe chSome chBool
+            chSeq chPosLong]]
 
-(ns kongra.prelude.search
-  (:require [kongra.ch      :refer :all]
-            [kongra.prelude :refer :all]))
+   [clojure.kongra.prelude
+    :refer [lazy-cat']]))
 
-;; TREE SEARCH ROUTINES FROM BY PAIP , CHAPTER 6.4
+;; TREE SEARCH ROUTINES FROM BY PAIP, CHAPTER 6.4
 
 ;; COMBINERS
-(def breadth-first-combiner               concat)
-(def lazy-breadth-first-combiner       lazy-cat')
+(def breadth-first-combiner        concat )
+(def lazy-breadth-first-combiner lazy-cat')
 
 (def depth-first-combiner      #(concat   %2 %1))
 (def lazy-depth-first-combiner #(lazy-cat %2 %1))
@@ -24,7 +28,7 @@
            (loop [nodes (list start)]
              (when (seq nodes)
                (let [obj (first nodes)]
-                 (if (chBoolean (goal? obj))
+                 (if (chBool (goal? obj))
                    obj
                    (recur (chSeq (comb (chSeq (rest nodes))
                                        (chSeq (adjs   obj)))))))))))
@@ -49,7 +53,7 @@
   (chIfn adjs)
   (chSeq (->> (list              start)
               (iterate #(mapcat adjs %))
-              (map              chSeq')
+              (map                chSeq)
               (take-while          seq))))
 
 (defn breadth-first-tree-seq

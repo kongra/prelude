@@ -1,14 +1,19 @@
 ;; Copyright (c) 2016-present Konrad Grzanek
 ;; Created 2016-09-26
+(ns clojure.kongra.prelude
+  (:require
+   [primitive-math
+    :as p]
 
-(ns kongra.prelude
-  (:require [primitive-math             :as p]
-            [clojure.math.numeric-tower :as m]
+   [clojure.math.numeric-tower
+    :as m]
 
-            [kongra.ch :refer :all]))
+   [clojure.kongra.ch
+    :refer [defchP chBool chUnit chMaybe chString chAtom
+            chNumber chNatLong chIfn
+            chSeq chSequential chAssoc chColl chVector]]))
 
 ;; SYS/JVM
-
 (defn room
   []
   (chUnit
@@ -31,7 +36,7 @@
   ([verbose?]
    (chUnit
     (do (System/gc)
-        (when (chBoolean verbose?) (room))))))
+        (when (chBool verbose?) (room))))))
 
 (defmacro with-out-systemout
   [& body]
@@ -52,34 +57,20 @@
     (p// (p/- end start) 1e6)))
 
 ;; STRING ROUTINES
-
 (defn blank?
   [s]
   (chMaybe chString s)
-  (chBoolean (org.apache.commons.lang3.StringUtils/isBlank s)))
+  (chBool (org.apache.commons.lang3.StringUtils/isBlank s)))
 
 (defn not-blank?
   [s]
   (chMaybe chString s)
-  (chBoolean (not (blank? s))))
+  (chBool (not (blank? s))))
 
-(deftype  NonBlank [s] java.lang.Object (toString [_] s))
-(defchC chNonBlank NonBlank)
-(defn consNonBlank [s] (ch not-blank? s) (NonBlank. s))
-
-(defn strip
+#_(defn strip
   [s]
   (chMaybe chString s)
   (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
-
-(deftype  Stripped [s] java.lang.Object (toString [_] s))
-(defchC chStripped Stripped)
-(defn consStripped [s] (Stripped. (strip s)))
-
-(deftype  StrippedNonBlank [s] java.lang.Object (toString [_] s))
-(defchC chStrippedNonBlank StrippedNonBlank)
-(defn consStrippedNonBlank [s]
-  (StrippedNonBlank. (ch not-blank? (strip s))))
 
 (defn indent-string
   ([^long n]
@@ -101,7 +92,6 @@
               (if (p/> diff 0) (str s (indent-string diff)) s))))
 
 ;; MISC. UTILS
-
 (defn longs<
   ([^long start]
    (chSeq (longs< start 1)))
@@ -145,15 +135,15 @@
   "Returns a vector that is a result of removing n-th element from the
   vector v."
   [^long n v]
-  (chVec v)
-  (chVec (vec (concat (subvec v 0 n)
+  (chVector v)
+  (chVector (vec (concat (subvec v 0 n)
                       (subvec v (p/inc n))))))
 
 (defn ref=
   "Alias of clojure.core/identical."
   {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
   [x y]
-  (chBoolean (clojure.lang.Util/identical x y)))
+  (chBool (clojure.lang.Util/identical x y)))
 
 (defn bnot [b]
   {:inline (fn [b] `(jkongra.prelude.Primitives/bnot ~b))}
@@ -166,12 +156,10 @@
     (fn [] ~@body)))
 
 ;; KIBIT CHEATERS
-
 (defn lazy-cat' [s1 s2] (lazy-cat s1 s2))
 (defn chSeq'    [x    ] (chSeq x))
 
 ;; ARRAYS AND RELATED CHECKS
-
 (defn make-longs ^longs
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeLongs ~size))}
   [^long size]
@@ -202,17 +190,16 @@
   [x]
   (jkongra.prelude.Primitives/isObjects x))
 
-(defch chLongs   `(ch   longs?))
-(defch chDoubles `(ch doubles?))
-(defch chObjects `(ch objects?))
+(defchP chLongs   (longs?   x))
+(defchP chDoubles (doubles? x))
+(defchP chObjects (objects? x))
 
 ;; KLEENE LOGIC
-
 (deftype ^:private Kleene [s]
   Object
   (toString [_] (str s)))
 
-(defchC chKleene Kleene)
+(defchP chKleene (instance? Kleene x))
 
 (def ^Kleene KleeneTrue      (Kleene. "KleeneTrue"     ))
 (def ^Kleene KleeneFalse     (Kleene. "KleeneFalse"    ))
@@ -255,9 +242,8 @@
                KleeneUndefined))))))
 
 ;; PSEUDORANDOM NUMBERS GENERATORS
-
-(defchC chRandom         java.util.Random)
-(defchC chRandist jkongra.prelude.Randist)
+(defchP chRandom  (instance? java.util.Random        x))
+(defchP chRandist (instance? jkongra.prelude.Randist x))
 
 (defn uuid!
   []
@@ -290,7 +276,6 @@
 
 
 ;; BASIC MATH
-
 (defn **
   "Convenience wrapper around clojure.contrib.ccmath/expt."
   [base pow]
@@ -306,7 +291,7 @@
 
   ([multop x ^long n]
    (chNumber   x)
-   (chNatlong  n)
+   (chNatLong  n)
    (chIfn multop)
    (chNumber
     (loop [x x n n result (Long/valueOf 1)]
@@ -322,13 +307,12 @@
 ;; LOCREFS CHECKS
 ;; Defined here and not in the original kongra.prelude.locrefs for convenience
 ;; of use when requiring :all kongra.prelude
-
-(defchC chLRboolean jkongra.prelude.locrefs.LRboolean)
-(defchC chLRbyte    jkongra.prelude.locrefs.LRbyte   )
-(defchC chLRshort   jkongra.prelude.locrefs.LRshort  )
-(defchC chLRchar    jkongra.prelude.locrefs.LRchar   )
-(defchC chLRint     jkongra.prelude.locrefs.LRint    )
-(defchC chLRlong    jkongra.prelude.locrefs.LRlong   )
-(defchC chLRfloat   jkongra.prelude.locrefs.LRfloat  )
-(defchC chLRdouble  jkongra.prelude.locrefs.LRdouble )
-(defchC chLRobject  jkongra.prelude.locrefs.LRobject )
+(defchP chLRboolean (instance? jkongra.prelude.locrefs.LRboolean x))
+(defchP chLRbyte    (instance? jkongra.prelude.locrefs.LRbyte    x))
+(defchP chLRshort   (instance? jkongra.prelude.locrefs.LRshort   x))
+(defchP chLRchar    (instance? jkongra.prelude.locrefs.LRchar    x))
+(defchP chLRint     (instance? jkongra.prelude.locrefs.LRint     x))
+(defchP chLRlong    (instance? jkongra.prelude.locrefs.LRlong    x))
+(defchP chLRfloat   (instance? jkongra.prelude.locrefs.LRfloat   x))
+(defchP chLRdouble  (instance? jkongra.prelude.locrefs.LRdouble  x))
+(defchP chLRobject  (instance? jkongra.prelude.locrefs.LRobject  x))

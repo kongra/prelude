@@ -1,17 +1,23 @@
 ;; Copyright (c) 2017-present Konrad Grzanek
 ;; Created 2017-04-06
+(ns clojure.kongra.prelude.io
+  (:require
+   [clojure.kongra.ch
+    :refer [chSome defchP]])
 
-(ns kongra.prelude.io
-  (:require [kongra.ch :refer :all])
-  (:import  [java.io InputStream ByteArrayInputStream
-                            File      FileInputStream]
-            [java.nio.charset                 Charset]))
+  (:import
+   [java.io
+    InputStream ByteArrayInputStream
+    File FileInputStream]
+
+   [java.nio.charset
+    Charset]))
 
 ;; SYSTEM-WIDE CHARACTER ENCODING
-(def ^Charset ENCODING (chC Charset (Charset/forName "UTF-8")))
+(def ^Charset ENCODING (chSome (Charset/forName "UTF-8")))
 
 ;; CONVERSION TO InputStream
-(defchC chInputStream InputStream) (regch chInputStream)
+(defchP chInputStream (instance? InputStream x))
 
 (defprotocol ToInputStream
   (^InputStream input-stream [this]))

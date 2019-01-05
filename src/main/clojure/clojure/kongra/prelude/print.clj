@@ -1,10 +1,17 @@
 ;; Copyright (c) 2017-present Konrad Grzanek
 ;; Created 2017-04-07
+(ns clojure.kongra.prelude.print
+  (:require
+   [primitive-math
+    :as p])
 
-(ns kongra.prelude.print
-  (:require [primitive-math :as       p])
-  (:require [kongra.ch      :refer :all])
-  (:require [kongra.prelude :refer :all]))
+  (:require
+   [clojure.kongra.ch
+    :refer [chString chBool chMaybe chSequential chIfn
+            chNatLong chUnit chAtom]]
+
+   [clojure.kongra.prelude
+    :refer [mark-last]]))
 
 ;; TREE-PRINTING
 
@@ -17,13 +24,13 @@
 
 (defn ^:private print-tree-indent-symbol
   [is-empty]
-  (chString (if (chBoolean is-empty)
+  (chString (if (chBool is-empty)
               PRINT-TREE-EMPTYINDENT
               PRINT-TREE-INDENT)))
 
 (defn ^:private print-tree-genindent
   [[is-last & last-child-infos]]
-  (chBoolean                  is-last)
+  (chBool is-last)
   (chMaybe chSequential last-child-infos)
   (chString
    (let [suffix (if is-last PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
@@ -41,7 +48,7 @@
   (chNatLong               depth)
   (chNatLong               level)
   (chSequential last-child-infos)
-  (chBoolean            is-first)
+  (chBool               is-first)
   (chUnit
    (let [s    (chString (show node))
          pfx  (if is-first PRINT-TREE-EMPTY PRINT-TREE-EOL)

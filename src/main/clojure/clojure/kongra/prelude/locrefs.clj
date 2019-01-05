@@ -1,10 +1,10 @@
 ;; Copyright (c) Konrad Grzanek. All rights reserved.
 ;; Created     2015-12-19
 ;; Re-designed 2017-07-07
-
-(ns kongra.prelude.locrefs
-  (:refer-clojure :exclude [boolean byte short char int long float double
-                            reset!]))
+(ns clojure.kongra.prelude.locrefs
+  (:refer-clojure
+   :exclude [boolean byte short char int long float double
+             reset!]))
 
 ;; FAST MUTABLE, THREAD-UNSAFE (LOCAL) REFS FOR JAVA PRIMITIVE TYPES.
 ;; NO IDENTITY SEMANTICS.

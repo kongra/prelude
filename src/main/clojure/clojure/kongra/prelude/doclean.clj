@@ -1,13 +1,16 @@
 ;; Copyright (c) 2016-present Konrad Grzanek
 ;; Created     2014-03-21
 ;; Re-designed 2016-10-13
+(ns clojure.kongra.prelude.doclean
+  (:refer-clojure
+   :exclude [ensure])
 
-(ns kongra.prelude.doclean
-  (:refer-clojure :exclude [ensure])
-  (:require [kongra.ch :refer :all]))
+  (:require
+   [clojure.kongra.ch
+    :refer [defchP chIfn chUnit]))
 
 ;; CLEANUP CONTEXT
-(defchC chDoclean jkongra.prelude.Doclean)
+(defchP chDoclean (instance? jkongra.prelude.Doclean x))
 
 (defn ^jkongra.prelude.Doclean create [ ] (jkongra.prelude.Doclean.))
 
