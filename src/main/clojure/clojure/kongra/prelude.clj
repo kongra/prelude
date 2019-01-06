@@ -17,17 +17,18 @@
 (defn room
   []
   (chUnit
-   (let [free-memory  (.. Runtime getRuntime  freeMemory)
-         total-memory (.. Runtime getRuntime totalMemory)
-         max-memory   (.. Runtime getRuntime   maxMemory)
-         used-memory  (- total-memory free-memory)
+   (let [memFree  (.. Runtime getRuntime  freeMemory)
+         memTotal (.. Runtime getRuntime totalMemory)
+         memMax   (.. Runtime getRuntime   maxMemory)
+         memUsed  (-  memTotal memFree)
 
-         scale (fn [arg] (double (/ arg (* 1024 1024))))]
+         scale    (fn [arg]
+                    (double (/ arg (* 1024 1024))))]
 
-     (printf "Used  memory : %f MB\n" (scale  used-memory))
-     (printf "Free  memory : %f MB\n" (scale  free-memory))
-     (printf "Total memory : %f MB\n" (scale total-memory))
-     (printf "Max   memory : %f MB\n" (scale   max-memory)))))
+     (printf "Used  memory : %f MB\n" (scale  memUsed))
+     (printf "Free  memory : %f MB\n" (scale  memFree))
+     (printf "Total memory : %f MB\n" (scale memTotal))
+     (printf "Max   memory : %f MB\n" (scale   memMax)))))
 
 (defn gc
   ([]
@@ -68,9 +69,9 @@
   (chBool (not (blank? s))))
 
 #_(defn strip
-  [s]
-  (chMaybe chString s)
-  (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
+    [s]
+    (chMaybe chString s)
+    (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
 
 (defn indentString
   ([^long n]
@@ -124,12 +125,12 @@
          (cons false (lazy-seq (markLast others))))))))
 
 (defn assoConj
-  "Adds v to a collection that is a value for k in m. Uses empty-coll
+  "Adds v to a collection that is a value for k in m. Uses emptyColl
   when no collection for k in m."
-  [m k v empty-coll]
+  [m k v emptyColl]
   (chAssoc         m)
-  (chColl empty-coll)
-  (chAssoc (assoc m k (conj (chColl (get m k empty-coll)) v))))
+  (chColl emptyColl)
+  (chAssoc (assoc m k (conj (chColl (get m k emptyColl)) v))))
 
 (defn vecRemove
   "Returns a vector that is a result of removing n-th element from the
@@ -137,7 +138,7 @@
   [^long n v]
   (chVector v)
   (chVector (vec (concat (subvec v 0 n)
-                      (subvec v (p/inc n))))))
+                         (subvec v (p/inc n))))))
 
 (defn ref=
   "Alias of clojure.core/identical."
@@ -280,10 +281,10 @@
   "Convenience wrapper around clojure.contrib.ccmath/expt."
   [base pow]
   (chNumber
-      (do
-        (chNumber base)
-        (chNumber  pow)
-        (m/expt base pow))))
+   (do
+     (chNumber base)
+     (chNumber  pow)
+     (m/expt base pow))))
 
 (defn **-N
   "x to the power of n such that n is a Natural long"

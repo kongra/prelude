@@ -26,12 +26,12 @@
   (chString (if (chBool isEmpty?) PRINT-TREE-EMPTYINDENT PRINT-TREE-INDENT)))
 
 (defn ^:private genindent
-  [[is-last & last-child-infos]]
-  (chBool is-last)
-  (chMaybe chSequential last-child-infos)
+  [[isLast? & lastChildInfos]]
+  (chBool isLast?)
+  (chMaybe chSequential lastChildInfos)
   (chString
-   (let [suffix (if is-last PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
-         prefix (->> last-child-infos
+   (let [suffix (if isLast? PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
+         prefix (->> lastChildInfos
                      butlast
                      reverse
                      (map indentSymbol)
@@ -39,33 +39,33 @@
      (str prefix suffix))))
 
 (defn ^:private printTreeImpl
-  [node adjs show ^Long depth ^Long level last-child-infos is-first]
-  (chIfn                    adjs)
-  (chIfn                    show)
-  (chNatLong               depth)
-  (chNatLong               level)
-  (chSequential last-child-infos)
-  (chBool               is-first)
+  [node adjs show ^Long depth ^Long level lastChildInfos isFirst?]
+  (chIfn                  adjs)
+  (chIfn                  show)
+  (chNatLong             depth)
+  (chNatLong             level)
+  (chSequential lastChildInfos)
+  (chBool             isFirst?)
   (chUnit
    (let [s    (chString (show node))
-         pfx  (if is-first PRINT-TREE-EMPTY PRINT-TREE-EOL)
+         pfx  (if isFirst? PRINT-TREE-EMPTY PRINT-TREE-EOL)
          repr (if (p/zero? (.longValue level))
                 (str pfx s)
-                (str pfx (genindent last-child-infos) s))]
+                (str pfx (genindent lastChildInfos) s))]
 
      (print repr)
 
      (when-not (p/== (.longValue level) (.longValue depth))
-       (let [next-level (p/inc level)
+       (let [nextLevel (p/inc level)
              children   (chSequential (adjs node))]
-         (doseq [[child is-last] (map vector children (markLast children))]
-           (printTreeImpl child adjs show depth next-level
-                            (cons is-last last-child-infos) false)))))))
+         (doseq [[child isLast?] (map vector children (markLast children))]
+           (printTreeImpl child adjs show depth nextLevel
+                          (cons isLast? lastChildInfos) false)))))))
 
 (defn printTree
   "Prints a tree using a textual representation like in UNIX tree command.
-  adjs : node -> [node]
-  show     : node -> String"
+   adjs : node -> [node]
+   show : node -> String"
   ([node adjs]
    (chIfn adjs)
    (chUnit (printTree node adjs str)))
@@ -116,9 +116,9 @@
    (chNatLong depth)
    (chUnit (binding [*printGraphVisited* (chAtom (atom #{}))]
              (printTree v
-                         (partial printGraphAdjs adjs)
-                         (partial printGraphShow show)
-                         depth))))
+                        (partial printGraphAdjs adjs)
+                        (partial printGraphShow show)
+                        depth))))
   ([v adjs show]
    (chIfn adjs)
    (chIfn show)

@@ -7,7 +7,7 @@
 
   (:require
    [clojure.kongra.ch
-    :refer [defchP chIfn chUnit]))
+    :refer [defchP chIfn chUnit])))
 
 ;; CLEANUP CONTEXT
 (defchP chDoclean (instance? jkongra.prelude.Doclean x))
