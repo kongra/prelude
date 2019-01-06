@@ -38,7 +38,7 @@
     (do (System/gc)
         (when (chBool verbose?) (room))))))
 
-(defmacro with-out-systemout
+(defmacro withOutSystemout
   [& body]
   `(binding [*out* (java.io.PrintWriter. System/out)] ~@body))
 
@@ -62,7 +62,7 @@
   (chMaybe chString s)
   (chBool (org.apache.commons.lang3.StringUtils/isBlank s)))
 
-(defn not-blank?
+(defn nonBlank?
   [s]
   (chMaybe chString s)
   (chBool (not (blank? s))))
@@ -72,24 +72,24 @@
   (chMaybe chString s)
   (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
 
-(defn indent-string
+(defn indentString
   ([^long n]
-   (chString (indent-string n " ")))
+   (chString (indentString n " ")))
 
   ([^long n ^String with]
    (chString (let [sb (StringBuilder. (p/* n (.length with)))]
                (dotimes [i n] (.append sb with))
                (str sb)))))
 
-(defn prefix-2-length
+(defn prefix2length
   [^long n ^String s]
   (chString (let [diff (p/- n (.length s))]
-              (if (p/> diff 0) (str (indent-string diff) s) s))))
+              (if (p/> diff 0) (str (indentString diff) s) s))))
 
-(defn ^String postfix-2-length
+(defn ^String postfix2length
   [^long n ^String s]
   (chString (let [diff (p/- n (.length s))]
-              (if (p/> diff 0) (str s (indent-string diff)) s))))
+              (if (p/> diff 0) (str s (indentString diff)) s))))
 
 ;; MISC. UTILS
 (defn longs<
@@ -110,7 +110,7 @@
   []
   (chSeq (longs< 0)))
 
-(defn mark-last
+(defn markLast
   "Takes (e0 e1 ... en) and returns (false false ... true) or (false false ...)
   if the argument is infinite."
   [xs]
@@ -121,9 +121,9 @@
      (let [[_ & others] xs]
        (if-not (seq others)
          '(true)
-         (cons false (lazy-seq (mark-last others))))))))
+         (cons false (lazy-seq (markLast others))))))))
 
-(defn assoc-conj
+(defn assoConj
   "Adds v to a collection that is a value for k in m. Uses empty-coll
   when no collection for k in m."
   [m k v empty-coll]
@@ -131,7 +131,7 @@
   (chColl empty-coll)
   (chAssoc (assoc m k (conj (chColl (get m k empty-coll)) v))))
 
-(defn vec-remove
+(defn vecRemove
   "Returns a vector that is a result of removing n-th element from the
   vector v."
   [^long n v]
@@ -156,21 +156,21 @@
     (fn [] ~@body)))
 
 ;; KIBIT CHEATERS
-(defn lazy-cat' [s1 s2] (lazy-cat s1 s2))
+(defn lazyCat [s1 s2] (lazy-cat s1 s2))
 (defn chSeq'    [x    ] (chSeq x))
 
 ;; ARRAYS AND RELATED CHECKS
-(defn make-longs ^longs
+(defn makeLongs ^longs
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeLongs ~size))}
   [^long size]
   (jkongra.prelude.Primitives/makeLongs size))
 
-(defn make-doubles ^doubles
+(defn makeDoubles ^doubles
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeDoubles ~size))}
   [^long size]
   (jkongra.prelude.Primitives/makeDoubles size))
 
-(defn make-objects ^objects
+(defn makeObjects ^objects
   {:inline (fn [size] `(jkongra.prelude.Primitives/makeObjects ~size))}
   [^long size]
   (jkongra.prelude.Primitives/makeObjects size))
@@ -249,25 +249,25 @@
   []
   (chString (.. java.util.UUID randomUUID toString)))
 
-(defn make-MersenneTwister
+(defn makeMersenneTwister
   [^long seed]
   (chRandom
    (let [bs (byte-array 16)]
      (jkongra.prelude.Bits/putLong bs 0 seed)
      (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
 
-(def ^:private randist-state
-  (atom (jkongra.prelude.Randist. (make-MersenneTwister 0))))
+(def ^:private randistState
+  (atom (jkongra.prelude.Randist. (makeMersenneTwister 0))))
 
 (defn ^jkongra.prelude.Randist randist
   []
-  (chRandist (deref (chAtom randist-state))))
+  (chRandist (deref (chAtom randistState))))
 
-(defn set-seed!
+(defn setSeed!
   [^long seed]
   (chUnit
-   (do (reset! (chAtom randist-state)
-               (jkongra.prelude.Randist. (chRandom (make-MersenneTwister seed))))
+   (do (reset! (chAtom randistState)
+               (jkongra.prelude.Randist. (chRandom (makeMersenneTwister seed))))
        nil)))
 
 (defmacro randgen!

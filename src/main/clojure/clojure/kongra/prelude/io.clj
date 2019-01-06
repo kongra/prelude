@@ -15,24 +15,3 @@
 
 ;; SYSTEM-WIDE CHARACTER ENCODING
 (def ^Charset ENCODING (chSome (Charset/forName "UTF-8")))
-
-;; CONVERSION TO InputStream
-(defchP chInputStream (instance? InputStream x))
-
-(defprotocol ToInputStream
-  (^InputStream input-stream [this]))
-
-(extend-type InputStream
-  ToInputStream
-  (input-stream [this]
-    (chInputStream this)))
-
-(extend-type String
-  ToInputStream
-  (input-stream [this]
-    (chInputStream (-> this (.getBytes ENCODING) ByteArrayInputStream.))))
-
-(extend-type File
-  ToInputStream
-  (input-stream [this]
-    (chInputStream (FileInputStream. this))))

@@ -7,19 +7,19 @@
             chSeq chPosLong]]
 
    [clojure.kongra.prelude
-    :refer [lazy-cat']]))
+    :refer [lazyCat]]))
 
 ;; TREE SEARCH ROUTINES FROM BY PAIP, CHAPTER 6.4
 
 ;; COMBINERS
-(def breadth-first-combiner        concat )
-(def lazy-breadth-first-combiner lazy-cat')
+(def breadthFirstCombiner      concat)
+(def lazyBreadthFirstCombiner lazyCat)
 
-(def depth-first-combiner      #(concat   %2 %1))
-(def lazy-depth-first-combiner #(lazy-cat %2 %1))
+(def depthFirstCombiner     #(concat   %2 %1))
+(def lazyDepthFirstCombiner #(lazy-cat %2 %1))
 
 ;; TREE-SEARCH
-(defn tree-search
+(defn treeSearch
   [start goal? adjs comb]
   (chIfn goal?)
   (chIfn  adjs)
@@ -33,22 +33,22 @@
                    (recur (chSeq (comb (chSeq (rest nodes))
                                        (chSeq (adjs   obj)))))))))))
 
-(defn breadth-first-search
+(defn breadthFirstSearch
   [start goal? adjs]
   (chIfn goal?)
   (chIfn  adjs)
   (chMaybe chSome
-           (tree-search start goal? adjs breadth-first-combiner)))
+           (treeSearch start goal? adjs breadthFirstCombiner)))
 
-(defn depth-first-search
+(defn depthFirstSearch
   [start goal? adjs]
   (chIfn goal?)
   (chIfn  adjs)
   (chMaybe chSome
-           (tree-search start goal? adjs depth-first-combiner)))
+           (treeSearch start goal? adjs depthFirstCombiner)))
 
 ;; TREE-SEARCH SEQ
-(defn breadth-first-tree-levels
+(defn breadthFirstTreeLevels
   [start adjs]
   (chIfn adjs)
   (chSeq (->> (list              start)
@@ -56,14 +56,14 @@
               (map                chSeq)
               (take-while          seq))))
 
-(defn breadth-first-tree-seq
+(defn breadthFirstTreeSeq
   ([start adjs]
    (chIfn adjs)
-   (chSeq (apply concat (breadth-first-tree-levels start adjs))))
+   (chSeq (apply concat (breadthFirstTreeLevels start adjs))))
 
   ([start adjs depth]
    (chIfn      adjs)
    (chPosLong depth)
-   (chSeq (->> (breadth-first-tree-levels start adjs)
+   (chSeq (->> (breadthFirstTreeLevels start adjs)
                (take  depth)
                (apply concat)))))
