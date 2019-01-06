@@ -23,62 +23,62 @@
 
 (defn ^:private indentSymbol
   [isEmpty?]
-  (chString (if (chBool isEmpty?) PRINT-TREE-EMPTYINDENT PRINT-TREE-INDENT)))
+  (chString
+   (if (chBool isEmpty?)
+     PRINT-TREE-EMPTYINDENT
+     PRINT-TREE-INDENT)))
 
 (defn ^:private genindent
   [[isLast? & lastChildInfos]]
-  (chBool isLast?)
-  (chMaybe chSequential lastChildInfos)
   (chString
-   (let [suffix (if isLast? PRINT-TREE-FORLASTCHILD PRINT-TREE-FORCHILD)
-         prefix (->> lastChildInfos
-                     butlast
-                     reverse
-                     (map indentSymbol)
-                     (apply str))]
-     (str prefix suffix))))
+   (do (chBool  isLast?)
+       (chMaybe chSequential lastChildInfos)
+       (let [suffix (if isLast?
+                      PRINT-TREE-FORLASTCHILD
+                      PRINT-TREE-FORCHILD)
+             prefix (->> lastChildInfos
+                         butlast
+                         reverse
+                         (map indentSymbol)
+                         (apply str))]
+
+         (str prefix suffix)))))
 
 (defn ^:private printTreeImpl
   [node adjs show ^Long depth ^Long level lastChildInfos isFirst?]
-  (chIfn                  adjs)
-  (chIfn                  show)
-  (chNatLong             depth)
-  (chNatLong             level)
-  (chSequential lastChildInfos)
-  (chBool             isFirst?)
   (chUnit
-   (let [s    (chString (show node))
-         pfx  (if isFirst? PRINT-TREE-EMPTY PRINT-TREE-EOL)
-         repr (if (p/zero? (.longValue level))
-                (str pfx s)
-                (str pfx (genindent lastChildInfos) s))]
+   (do (chIfn                  adjs)
+       (chIfn                  show)
+       (chNatLong             depth)
+       (chNatLong             level)
+       (chSequential lastChildInfos)
+       (chBool             isFirst?)
+       (let [s    (chString (show node))
+             pfx  (if isFirst? PRINT-TREE-EMPTY PRINT-TREE-EOL)
+             repr (if (p/zero? (.longValue level))
+                    (str pfx s)
+                    (str pfx (genindent lastChildInfos) s))]
 
-     (print repr)
+         (print repr)
 
-     (when-not (p/== (.longValue level) (.longValue depth))
-       (let [nextLevel (p/inc level)
-             children   (chSequential (adjs node))]
-         (doseq [[child isLast?] (map vector children (markLast children))]
-           (printTreeImpl child adjs show depth nextLevel
-                          (cons isLast? lastChildInfos) false)))))))
+         (when-not (p/== (.longValue level) (.longValue depth))
+           (let [nextLevel (p/inc level)
+                 children   (chSequential (adjs node))]
+             (doseq [[child isLast?] (map vector children (markLast children))]
+               (printTreeImpl child adjs show depth nextLevel
+                              (cons isLast? lastChildInfos) false))))))))
 
 (defn printTree
   "Prints a tree using a textual representation like in UNIX tree command.
    adjs : node -> [node]
    show : node -> String"
   ([node adjs]
-   (chIfn adjs)
    (chUnit (printTree node adjs str)))
 
   ([node adjs show]
-   (chIfn adjs)
-   (chIfn show)
    (chUnit (printTree node adjs show Long/MAX_VALUE)))
 
-  ([node adjs show depth]
-   (chIfn      adjs)
-   (chIfn      show)
-   (chNatLong depth)
+  ([node adjs show ^Long depth]
    (chUnit (printTreeImpl node adjs show depth 0 '(true) true))))
 
 ;; GRAPH TREE-PRINTING
@@ -89,7 +89,6 @@
 
 (defn ^:private printGraphShow
   [show v]
-  (chIfn show)
   (chString (if (instance? PrintGraphEllipsis v)
               (str (chString (show (.v ^PrintGraphEllipsis v))) " ...")
 
@@ -99,7 +98,6 @@
 
 (defn ^:private printGraphAdjs
   [adjs v]
-  (chIfn adjs)
   (chSequential
    (if-not (instance? PrintGraphEllipsis v)
      (map
@@ -110,22 +108,16 @@
      '())))
 
 (defn printGraph
-  ([v adjs show depth]
-   (chIfn      adjs)
-   (chIfn      show)
-   (chNatLong depth)
+  ([v adjs show ^Long depth]
    (chUnit (binding [*printGraphVisited* (chAtom (atom #{}))]
              (printTree v
                         (partial printGraphAdjs adjs)
                         (partial printGraphShow show)
                         depth))))
   ([v adjs show]
-   (chIfn adjs)
-   (chIfn show)
    (chUnit (printGraph v adjs show Long/MAX_VALUE)))
 
   ([v adjs]
-   (chIfn adjs)
    (chUnit (printGraph v adjs str))))
 
 ;; SOME TESTS

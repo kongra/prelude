@@ -3,8 +3,7 @@
 (ns clojure.kongra.prelude.search
   (:require
    [clojure.kongra.ch
-    :refer [chIfn chMaybe chSome chBool
-            chSeq chPosLong]]
+    :refer [chIfn chBool chSeq chPosLong]]
 
    [clojure.kongra.prelude
     :refer [lazyCat]]))
@@ -24,28 +23,21 @@
   (chIfn goal?)
   (chIfn  adjs)
   (chIfn  comb)
-  (chMaybe chSome
-           (loop [nodes (list start)]
-             (when (seq nodes)
-               (let [obj (first nodes)]
-                 (if (chBool (goal? obj))
-                   obj
-                   (recur (chSeq (comb (chSeq (rest nodes))
-                                       (chSeq (adjs   obj)))))))))))
+  (loop [nodes (list start)]
+    (when (seq nodes)
+      (let [obj (first nodes)]
+        (if (chBool (goal? obj))
+          obj
+          (recur (chSeq (comb (chSeq (rest nodes))
+                              (chSeq (adjs   obj))))))))))
 
 (defn breadthFirstSearch
   [start goal? adjs]
-  (chIfn goal?)
-  (chIfn  adjs)
-  (chMaybe chSome
-           (treeSearch start goal? adjs breadthFirstCombiner)))
+  (treeSearch start goal? adjs breadthFirstCombiner))
 
 (defn depthFirstSearch
   [start goal? adjs]
-  (chIfn goal?)
-  (chIfn  adjs)
-  (chMaybe chSome
-           (treeSearch start goal? adjs depthFirstCombiner)))
+  (treeSearch start goal? adjs depthFirstCombiner))
 
 ;; TREE-SEARCH SEQ
 (defn breadthFirstTreeLevels
@@ -61,9 +53,8 @@
    (chIfn adjs)
    (chSeq (apply concat (breadthFirstTreeLevels start adjs))))
 
-  ([start adjs depth]
-   (chIfn      adjs)
+  ([start adjs ^long depth]
    (chPosLong depth)
    (chSeq (->> (breadthFirstTreeLevels start adjs)
-               (take  depth)
+               (take   depth)
                (apply concat)))))

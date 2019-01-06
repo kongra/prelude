@@ -12,9 +12,13 @@
 ;; CLEANUP CONTEXT
 (defchP chDoclean (instance? jkongra.prelude.Doclean x))
 
-(defn ^jkongra.prelude.Doclean create [ ] (jkongra.prelude.Doclean.))
+(defn ^jkongra.prelude.Doclean create
+  []
+  (jkongra.prelude.Doclean.))
 
-(defn close! [^jkongra.prelude.Doclean d] (chUnit (.close d)))
+(defn close!
+  [^jkongra.prelude.Doclean d]
+  (chUnit (.close d)))
 
 (def ^:dynamic *doclean* nil)
 
@@ -34,9 +38,10 @@
 
 (defn register!
   ([^jkongra.prelude.Doclean d f]
-   (chIfn f)
-   (chUnit (.register d (reify java.io.Closeable (close [this] (f))))))
+   (chUnit
+    (do (chDoclean d)
+        (chIfn     f)
+        (.register d (reify java.io.Closeable (close [this] (f))))
+        nil)))
 
-  ([f]
-   (chIfn f)
-   (chUnit (register! (ensure) f))))
+  ([f] (register! (ensure) f)))

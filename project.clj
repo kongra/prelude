@@ -1,6 +1,6 @@
 ;; Copyright (c) Konrad Grzanek
 ;; Created 2019-01-05
-(defproject kongra/prelude "0.1.11"
+(defproject kongra/prelude "0.1.12"
   :description  "Predule codebase for Clojure"
   :url          "https://github.com/kongra/prelude"
   :license      {:name   "Eclipse Public License"
