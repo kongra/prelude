@@ -6,12 +6,7 @@
     :refer [chSome defchP]])
 
   (:import
-   [java.io
-    InputStream ByteArrayInputStream
-    File FileInputStream]
-
-   [java.nio.charset
-    Charset]))
+   [java.nio.charset Charset]))
 
 ;; SYSTEM-WIDE CHARACTER ENCODING
 (def ^Charset ENCODING (chSome (Charset/forName "UTF-8")))

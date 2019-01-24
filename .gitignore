@@ -11,3 +11,4 @@
 /logs/
 /target/
 pom.xml*
+/resources/public/js/prelude.js
