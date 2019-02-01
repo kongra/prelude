@@ -27,6 +27,21 @@
 #_(use 'no.disassemble)
 #_(println (disassemble fibcount))
 
-(time (do (test1 42)
-          (test1 43)
-          (test1 44)))
+#_(time (do (test1 42)
+            (test1 43)
+            (test1 44)))
+
+(defn fib ^long
+  [^long n]
+  (chNatLong
+   (do (chNatLong n)
+       (if (or (= n 0) (= n 1))
+         n
+
+         (+ (fib (- n 1)) (fib (- n 2)))))))
+
+(time (do (println 43 (fib 43))
+          (println 44 (fib 44))
+          (println 45 (fib 45))))
+
+(println (disassemble fib))
