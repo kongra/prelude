@@ -47,7 +47,7 @@
 
 (deftype ^:private Stopwatch [^long start])
 
-(defn ^Stopwatch stopwatch
+(defn stopwatch ^Stopwatch
   []
   (Stopwatch. (System/nanoTime)))
 
@@ -60,37 +60,34 @@
 ;; STRING ROUTINES
 (defn blank?
   [s]
-  (chMaybe chString s)
-  (chBool (org.apache.commons.lang3.StringUtils/isBlank s)))
+  (org.apache.commons.lang3.StringUtils/isBlank s))
 
 (defn nonBlank?
   [s]
-  (chMaybe chString s)
-  (chBool (not (blank? s))))
-
-#_(defn strip
-    [s]
-    (chMaybe chString s)
-    (chMaybe chString (org.apache.commons.lang3.StringUtils/strip s)))
+  (not (blank? s)))
 
 (defn indentString
   ([^long n]
-   (chString (indentString n " ")))
+   (chString
+     (indentString n " ")))
 
   ([^long n ^String with]
-   (chString (let [sb (StringBuilder. (p/* n (.length with)))]
-               (dotimes [i n] (.append sb with))
-               (str sb)))))
+   (chString
+     (let [sb (StringBuilder. (p/* n (.length with)))]
+       (dotimes [i n] (.append sb with))
+       (str sb)))))
 
 (defn prefix2length
   [^long n ^String s]
-  (chString (let [diff (p/- n (.length s))]
-              (if (p/> diff 0) (str (indentString diff) s) s))))
+  (chString
+    (let [diff (p/- n (.length s))]
+      (if (p/> diff 0) (str (indentString diff) s) s))))
 
-(defn ^String postfix2length
+(defn postfix2length
   [^long n ^String s]
-  (chString (let [diff (p/- n (.length s))]
-              (if (p/> diff 0) (str s (indentString diff)) s))))
+  (chString
+    (let [diff (p/- n (.length s))]
+      (if (p/> diff 0) (str s (indentString diff)) s))))
 
 ;; MISC. UTILS
 (defn longs<
@@ -115,36 +112,38 @@
   "Takes (e0 e1 ... en) and returns (false false ... true) or (false false ...)
   if the argument is infinite."
   [xs]
-  (chSequential xs)
   (chSeq
-   (if-not (seq xs)
-     '()
-     (let [[_ & others] xs]
-       (if-not (seq others)
-         '(true)
-         (cons false (lazy-seq (markLast others))))))))
+    (do (chSequential xs)
+        (if-not (seq xs)
+          '()
+          (let [[_ & others] xs]
+            (if-not (seq others)
+              '(true)
+              (cons false (lazy-seq (markLast others)))))))))
 
 (defn assoConj
   "Adds v to a collection that is a value for k in m. Uses emptyColl
   when no collection for k in m."
   [m k v emptyColl]
-  (chAssoc         m)
-  (chColl emptyColl)
-  (chAssoc (assoc m k (conj (chColl (get m k emptyColl)) v))))
+  (chAssoc
+    (do (chAssoc        m)
+        (chColl emptyColl)
+        (assoc m k (conj (chColl (get m k emptyColl)) v)))))
 
 (defn vecRemove
   "Returns a vector that is a result of removing n-th element from the
   vector v."
   [^long n v]
-  (chVector v)
-  (chVector (vec (concat (subvec v 0 n)
-                         (subvec v (p/inc n))))))
+  (chVector
+    (do (chVector v)
+        (vec (concat (subvec v 0 n)
+                     (subvec v (p/inc n)))))))
 
 (defn ref=
   "Alias of clojure.core/identical."
   {:inline (fn [x y] `(. clojure.lang.Util identical ~x ~y))}
   [x y]
-  (chBool (clojure.lang.Util/identical x y)))
+  (clojure.lang.Util/identical x y))
 
 (defn bnot [b]
   {:inline (fn [b] `(jkongra.prelude.Primitives/bnot ~b))}
@@ -158,7 +157,7 @@
 
 ;; KIBIT CHEATERS
 (defn lazyCat [s1 s2] (lazy-cat s1 s2))
-(defn chSeq'    [x    ] (chSeq x))
+(defn chSeq'  [x    ] (chSeq x))
 
 ;; ARRAYS AND RELATED CHECKS
 (defn makeLongs ^longs
@@ -208,11 +207,11 @@
 
 (defn Kleene-not ;:- Kleene -> Kleene
   [x]
-  (chKleene x)
   (chKleene
-   (cond (ref= KleeneTrue  x) KleeneFalse
-         (ref= KleeneFalse x) KleeneTrue
-         :else                KleeneUndefined)))
+    (do (chKleene x)
+        (cond (ref= KleeneTrue  x) KleeneFalse
+              (ref= KleeneFalse x) KleeneTrue
+              :else                KleeneUndefined))))
 
 (defmacro Kleene-and
   ([]  `(chKleene KleeneTrue))
@@ -291,19 +290,21 @@
   ([x ^long n] (**-N *' x n))
 
   ([multop x ^long n]
-   (chNumber   x)
-   (chNatLong  n)
-   (chIfn multop)
    (chNumber
-    (loop [x x n n result (Long/valueOf 1)]
-      (cond (p/zero? n)
-            result
+    (do (chNumber   x)
+        (chNatLong  n)
+        (chIfn multop)
+        (loop [x x
+               n n
+               result (Long/valueOf 1)]
+          (cond (p/zero? n)
+                result
 
-            (jkongra.prelude.Maths/isEven n)
-            (recur (multop x x) (p// n 2) result)
+                (jkongra.prelude.Maths/isEven n)
+                (recur (multop x x) (p// n 2) result)
 
-            :else
-            (recur x (p/dec n) (multop x result)))))))
+                :else
+                (recur x (p/dec n) (multop x result))))))))
 
 ;; LOCREFS CHECKS
 ;; Defined here and not in the original kongra.prelude.locrefs for convenience
