@@ -9,9 +9,11 @@
     :as m]
 
    [clojure.kongra.ch
-    :refer [defchP chBool chUnit chMaybe chString chAtom
+    :refer [defchP chBool chUnit chOptional chString chAtom
             chNumber chNatLong chIfn
             chSeq chSequential chAssoc chColl chVector]]))
+
+(set! *warn-on-reflection* true)
 
 ;; SYS/JVM
 (defn room

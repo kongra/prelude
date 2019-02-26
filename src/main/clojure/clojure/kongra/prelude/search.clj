@@ -8,6 +8,8 @@
    [clojure.kongra.prelude
     :refer [lazyCat]]))
 
+(set! *warn-on-reflection* true)
+
 ;; TREE SEARCH ROUTINES FROM BY PAIP, CHAPTER 6.4
 
 ;; COMBINERS

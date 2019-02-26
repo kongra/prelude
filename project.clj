@@ -1,6 +1,6 @@
 ;; Copyright (c) Konrad Grzanek
 ;; Created 2019-01-05
-(defproject kongra/prelude "0.1.14"
+(defproject kongra/prelude "0.1.15"
   :description  "Predule codebase for Clojure"
   :url          "https://github.com/kongra/prelude"
   :license      {:name   "Eclipse Public License"
@@ -11,9 +11,9 @@
                  [org.clojure/math.numeric-tower       "0.0.4"]
                  [org.apache.commons/commons-lang3     "3.8.1"]
                  [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                 [kongra/ch                           "0.1.15"]
+                 [kongra/ch                           "0.1.16"]
 
-                 [org.clojure/clojurescript "1.10.516"]]
+                 [org.clojure/clojurescript "1.10.520"]]
 
   :plugins      [[lein-cljsbuild "1.1.7"]]
 
@@ -23,8 +23,7 @@
 
   :java-source-paths ["src/main/java"]
 
-  :global-vars  {*warn-on-reflection* true
-                 *assert*             true
+  :global-vars  {*warn-on-reflection* false
                  *print-length*       500}
 
   ;; :pedantic? :warn
@@ -36,7 +35,7 @@
   :aliases {"fig:repl" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]}
 
   :profiles {:repl {:plugins [[lein-nodisassemble "0.1.3"]
-                              [cider/cider-nrepl  "0.20.0"]]
+                              [cider/cider-nrepl  "0.21.0"]]
 
                     :middleware [lein-nodisassemble.plugin/middleware
                                  cider-nrepl.plugin/middleware]
@@ -46,7 +45,8 @@
                                "-XX:+UseCompressedOops"
                                "-Xms1G"
                                "-Xmx1G"
-                               "-verbose:gc"]}
+                               ;; "-verbose:gc"
+                               ]}
 
              :dev  {:dependencies  [[com.bhauman/figwheel-main       "0.2.0"]
                                     [com.bhauman/rebel-readline-cljs "0.1.4"]]

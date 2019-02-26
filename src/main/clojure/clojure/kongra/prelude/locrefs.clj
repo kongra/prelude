@@ -6,6 +6,8 @@
    :exclude [boolean byte short char int long float double
              reset!]))
 
+(set! *warn-on-reflection* true)
+
 ;; FAST MUTABLE, THREAD-UNSAFE (LOCAL) REFS FOR JAVA PRIMITIVE TYPES.
 ;; NO IDENTITY SEMANTICS.
 ;; (:require [clongra.locrefs :as lr])

@@ -8,5 +8,7 @@
   (:import
    [java.nio.charset Charset]))
 
+(set! *warn-on-reflection* true)
+
 ;; SYSTEM-WIDE CHARACTER ENCODING
 (def ^Charset ENCODING (chSome (Charset/forName "UTF-8")))

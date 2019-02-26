@@ -8,6 +8,8 @@
    [clojure.kongra.ch
     :refer [defchP chIfn chUnit]]))
 
+(set! *warn-on-reflection* true)
+
 ;; CLEANUP CONTEXT
 (defchP chDoclean (instance? jkongra.prelude.Doclean x))
 

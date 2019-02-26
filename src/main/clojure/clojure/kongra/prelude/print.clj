@@ -7,11 +7,13 @@
 
   (:require
    [clojure.kongra.ch
-    :refer [chString chBool chMaybe chSequential chIfn
+    :refer [chString chBool chOptional chSequential chIfn
             chNatLong chUnit chAtom]]
 
    [clojure.kongra.prelude
     :refer [markLast]]))
+
+(set! *warn-on-reflection* true)
 
 ;; TREE-PRINTING
 (def ^:private PRINT-TREE-INDENT       "│   ")
@@ -32,7 +34,7 @@
   [[isLast? & lastChildInfos]]
   (chString
    (do (chBool  isLast?)
-       (chMaybe chSequential lastChildInfos)
+       (chOptional chSequential lastChildInfos)
        (let [suffix (if isLast?
                       PRINT-TREE-FORLASTCHILD
                       PRINT-TREE-FORCHILD)
