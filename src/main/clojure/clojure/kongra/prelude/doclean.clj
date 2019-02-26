@@ -2,12 +2,11 @@
 ;; Created     2014-03-21
 ;; Re-designed 2016-10-13
 (ns clojure.kongra.prelude.doclean
-  (:refer-clojure
-   :exclude [ensure])
+  (:refer-clojure :exclude [ensure])
 
   (:require
    [clojure.kongra.ch
-    :refer [defchP chIfn chUnit])))
+    :refer [defchP chIfn chUnit]]))
 
 ;; CLEANUP CONTEXT
 (defchP chDoclean (instance? jkongra.prelude.Doclean x))
