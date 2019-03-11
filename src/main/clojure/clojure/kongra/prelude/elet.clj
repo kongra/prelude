@@ -3,21 +3,28 @@
 (ns clojure.kongra.prelude.elet
   (:require
    [clojure.kongra.ch
-    :refer [defchP]]))
+    :refer [defchP chOptional chAtom]]))
 
 (set! *warn-on-reflection* true)
 
 ;; SIMPLIFIED EITHER-LIKE MONAD
-(defrecord ^:private EletRight [value]
-  clojure.lang.IDeref (deref [_] value))
+(deftype ^:private EletRight [value]
+  clojure.lang.IDeref (deref [_] value)
 
-(defrecord ^:private EletLeft [value]
-  clojure.lang.IDeref (deref [_] value))
+  Object
+  (toString [_]
+    (str "EletRight[{:value " (if (nil? value) "nil" value) "}]")))
 
-(prefer-method print-method java.util.Map clojure.lang.IDeref)
+(deftype ^:private EletLeft [err value]
+  clojure.lang.IDeref (deref [_] err)
 
-(defn right [value] (EletRight. value))
-(defn left  [value] (EletLeft.  value))
+  Object
+  (toString [_]
+    (str "EletLeft[{:err " (if (nil?   err) "nil"   err)
+         " :value "        (if (nil? value) "nil" value) "}]")))
+
+(defn right [value]     (EletRight.     value))
+(defn left  [err value] (EletLeft.  err value))
 
 (defn right? [x] (instance? EletRight  x))
 (defn left?  [x] (instance? EletLeft   x))
@@ -43,3 +50,18 @@
            (let [~s @x#]
              (elet ~(vec otherBindings)
                    ~@body)))))))
+
+(defn leaving
+  ([e]
+   (leaving e nil))
+
+  ([e errsAtom]
+   (chElet
+     (do (chElet e)
+         (chOptional chAtom errsAtom)
+         (if (right? e)
+           e
+
+           (do (when errsAtom
+                 (swap! errsAtom conj (.err ^EletLeft e)))
+               (right (.value ^EletLeft e))))))))
