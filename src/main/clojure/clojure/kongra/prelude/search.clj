@@ -2,7 +2,7 @@
 ;; Created 2016-10-11
 (ns clojure.kongra.prelude.search
   (:require
-   [clojure.kongra.ch
+   [cljc.kongra.ch
     :refer [chIfn chBool chSeq chPosLong]]
 
    [clojure.kongra.prelude

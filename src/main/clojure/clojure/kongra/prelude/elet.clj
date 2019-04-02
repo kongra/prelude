@@ -2,7 +2,7 @@
 ;; Created 2019-03-10
 (ns clojure.kongra.prelude.elet
   (:require
-   [clojure.kongra.ch
+   [cljc.kongra.ch
     :refer [defchP chOptional chAtom]]))
 
 (set! *warn-on-reflection* true)

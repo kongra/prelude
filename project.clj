@@ -11,7 +11,7 @@
                  [org.clojure/math.numeric-tower       "0.0.4"]
                  [org.apache.commons/commons-lang3     "3.8.1"]
                  [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                 [kongra/ch                           "0.1.16"]
+                 [kongra/ch                           "0.1.18"]
 
                  [org.clojure/clojurescript "1.10.520"]]
 

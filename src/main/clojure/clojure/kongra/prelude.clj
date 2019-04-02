@@ -8,8 +8,8 @@
    [clojure.math.numeric-tower
     :as m]
 
-   [clojure.kongra.ch
-    :refer [defchP chBool chUnit chOptional chString chAtom
+   [cljc.kongra.ch
+    :refer [defchP chBool chUnit chString chAtom
             chNumber chNatLong chIfn
             chSeq chSequential chAssoc chColl chVector]]))
 

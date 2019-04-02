@@ -2,8 +2,8 @@
 ;; Created 2017-04-06
 (ns clojure.kongra.prelude.io
   (:require
-   [clojure.kongra.ch
-    :refer [chSome defchP]])
+   [cljc.kongra.ch
+    :refer [chSome]])
 
   (:import
    [java.nio.charset Charset]))

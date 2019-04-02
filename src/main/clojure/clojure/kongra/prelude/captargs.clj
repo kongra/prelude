@@ -2,7 +2,7 @@
 ;; Created 2019-03-06
 (ns clojure.kongra.prelude.captargs
   (:require
-   [clojure.kongra.ch
+   [cljc.kongra.ch
     :refer [chSome chOptional chIfn]]))
 
 (set! *warn-on-reflection* true)

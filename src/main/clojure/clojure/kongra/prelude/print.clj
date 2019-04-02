@@ -6,7 +6,7 @@
     :as p])
 
   (:require
-   [clojure.kongra.ch
+   [cljc.kongra.ch
     :refer [chString chBool chOptional chSequential chIfn
             chNatLong chUnit chAtom]]
 

@@ -5,7 +5,7 @@
   (:refer-clojure :exclude [ensure])
 
   (:require
-   [clojure.kongra.ch
+   [cljc.kongra.ch
     :refer [defchP chIfn chUnit]]))
 
 (set! *warn-on-reflection* true)
