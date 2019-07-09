@@ -60,3 +60,27 @@
    (chSeq (->> (breadthFirstTreeLevels start adjs)
                (take   depth)
                (apply concat)))))
+
+;; PERF. TEST
+;; (defn evenAdjs
+;;   [n i]
+;;   (take n (filter even? (iterate inc (inc i)))))
+
+;; (defn oddAdjs
+;;   [n i]
+;;   (take n (filter odd? (iterate inc (inc i)))))
+
+;; (defn test1
+;;   [n m]
+;;   (let [adjs  #(if (even? %) (oddAdjs n %) (evenAdjs n %))
+;;         goal? #(= % m)]
+
+;;     (breadthFirstSearch 0 goal? adjs)))
+
+;; (test1 200 430)
+;; (quick-bench (test1 20 79))
+;; (quick-bench (test1 200 430))
+
+;; (use 'criterium.core)
+;; (quick-bench (test1 20 75))
+;; (quick-bench (test1 20 1000000))
