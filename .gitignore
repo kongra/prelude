@@ -13,3 +13,6 @@
 pom.xml*
 /resources/public/js/prelude.js
 .eastwood
+.classpath
+.project
+.settings/

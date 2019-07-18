@@ -9,7 +9,7 @@
   :dependencies [[org.clojure/clojure                 "1.10.0"]
                  [primitive-math                       "0.1.6"]
                  [org.clojure/math.numeric-tower       "0.0.4"]
-                 [org.apache.commons/commons-lang3     "3.8.1"]
+                 [org.apache.commons/commons-lang3       "3.9"]
                  [org.uncommons.maths/uncommons-maths "1.2.2a"]
                  [kongra/ch                           "0.1.18"]
 
@@ -48,7 +48,7 @@
                                ;; "-verbose:gc"
                                ]}
 
-             :dev  {:dependencies  [[com.bhauman/figwheel-main       "0.2.0"]
+             :dev  {:dependencies  [[com.bhauman/figwheel-main       "0.2.3"]
                                     [com.bhauman/rebel-readline-cljs "0.1.4"]]
 
                     :source-paths   ["src/main/cljs"]
