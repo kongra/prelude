@@ -34,7 +34,8 @@
 
   :aliases {"fig:repl" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]}
 
-  :profiles {:repl {:plugins [[lein-nodisassemble "0.1.3"]
+  :profiles {:repl {:dependencies [[org.clojure/test.check "0.10.0"]]
+                    :plugins [[lein-nodisassemble "0.1.3"]
                               [cider/cider-nrepl  "0.22.3"]]
 
                     :middleware [lein-nodisassemble.plugin/middleware
