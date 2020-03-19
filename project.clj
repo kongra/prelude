@@ -11,9 +11,8 @@
                  [org.clojure/math.numeric-tower       "0.0.4"]
                  [org.apache.commons/commons-lang3       "3.9"]
                  [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                 [kongra/ch                           "0.1.18"]
-
-                 [org.clojure/clojurescript "1.10.520"]]
+                 [kongra/ch                           "0.1.27"]
+                 [org.clojure/clojurescript         "1.10.597"]]
 
   :plugins      [[lein-cljsbuild "1.1.7"]]
 
@@ -34,12 +33,12 @@
 
   :aliases {"fig:repl" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]}
 
-  :profiles {:repl {:dependencies [[org.clojure/test.check "0.10.0"]]
-                    :plugins [[lein-nodisassemble "0.1.3"]
-                              [cider/cider-nrepl  "0.22.3"]]
+  :profiles {:repl {:dependencies [[org.clojure/test.check  "1.0.0"]]
+                    :plugins      [[lein-nodisassemble      "0.1.3"]
+                                   [cider/cider-nrepl       "0.25.0-SNAPSHOT"]]
 
-                    :middleware [lein-nodisassemble.plugin/middleware
-                                 cider-nrepl.plugin/middleware]
+                    :middleware   [lein-nodisassemble.plugin/middleware
+                                   cider-nrepl.plugin/middleware]
 
                     :jvm-opts [;; "-Dclojure.compiler.direct-linking=false"
                                "-XX:+DoEscapeAnalysis"
