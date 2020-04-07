@@ -66,6 +66,31 @@
 
       (FibCount3. (+ v1 v2) (+ c1 c2)))))
 
-(time (do (println (fibcount3 41))
-          (println (fibcount3 42))
-          (println (fibcount3 43))))
+;; (time (do (println (fibcount3 41))
+;;           (println (fibcount3 42))
+;;           (println (fibcount3 43))))
+
+(defn fibo-loop ^long
+  [^long a ^long b ^long n]
+  (if (zero? n)
+    a
+    (recur b (+ a b) (dec n))))
+
+(defn fibo ^long
+  [^long n]
+  (fibo-loop 0 1 n))
+
+(time
+  (dotimes [i 10000000]
+    (fibo 78)))
+
+(time
+  (dotimes [i 10000000]
+    (fibo 78)))
+
+(time
+  (dotimes [i 10000000]
+    (fibo 78)))
+
+;; (use 'no.disassemble)
+;; (println (disassemble fibo-loop))
