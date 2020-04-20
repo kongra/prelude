@@ -70,27 +70,38 @@
 ;;           (println (fibcount3 42))
 ;;           (println (fibcount3 43))))
 
-(defn fibo-loop ^long
-  [^long a ^long b ^long n]
+(defn fibo-loop
+  [a b n]
   (if (zero? n)
     a
     (recur b (+ a b) (dec n))))
 
-(defn fibo ^long
-  [^long n]
+(defn fibo
+  [n]
   (fibo-loop 0 1 n))
 
-(time
-  (dotimes [i 10000000]
-    (fibo 78)))
+(defn test-11
+  []
+  (loop [i      0
+         result 0]
 
-(time
-  (dotimes [i 10000000]
-    (fibo 78)))
+    (if (= i 10000000)
+      result
 
-(time
-  (dotimes [i 10000000]
-    (fibo 78)))
+      (recur (inc' i) (+' result (fibo 78))))))
 
-;; (use 'no.disassemble)
-;; (println (disassemble fibo-loop))
+
+;; (time
+;;   (dotimes [i 10000000]
+;;     (fibo 78)))
+
+;; (time
+;;   (dotimes [i 10000000]
+;;     (fibo 78)))
+
+;; (time
+;;   (dotimes [i 10000000]
+;;     (fibo 78)))
+
+(use 'no.disassemble)
+(println (disassemble fibo-loop))
