@@ -47,7 +47,7 @@
 
 ;; ELAPSED TIME IN MILLIS
 
-(deftype ^:private Stopwatch [^long start])
+(deftype Stopwatch [^long start])
 
 (defn stopwatch ^Stopwatch
   []
@@ -76,7 +76,7 @@
   ([^long n ^String with]
    (chString
      (let [sb (StringBuilder. (p/* n (.length with)))]
-       (dotimes [i n] (.append sb with))
+       (dotimes [_ n] (.append sb with))
        (str sb)))))
 
 (defn prefix2length
@@ -250,32 +250,6 @@
 (defn uuid!
   []
   (chString (.. java.util.UUID randomUUID toString)))
-
-(defn makeMersenneTwister
-  [^long seed]
-  (chRandom
-   (let [bs (byte-array 16)]
-     (jkongra.prelude.Bits/putLong bs 0 seed)
-     (org.uncommons.maths.random.MersenneTwisterRNG. bs))))
-
-(def ^:private randistState
-  (atom (jkongra.prelude.Randist. (makeMersenneTwister 0))))
-
-(defn ^jkongra.prelude.Randist randist
-  []
-  (chRandist (deref (chAtom randistState))))
-
-(defn setSeed!
-  [^long seed]
-  (chUnit
-   (do (reset! (chAtom randistState)
-               (jkongra.prelude.Randist. (chRandom (makeMersenneTwister seed))))
-       nil)))
-
-(defmacro randgen!
-  [method & args]
-  `(~method (randist) ~@args))
-
 
 ;; BASIC MATH
 (defn **

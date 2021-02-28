@@ -6,18 +6,16 @@
   :license      {:name   "Eclipse Public License"
                  :url    "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure                 "1.10.0"]
+  :dependencies [[org.clojure/clojure                 "1.10.2"]
                  [primitive-math                       "0.1.6"]
                  [org.clojure/math.numeric-tower       "0.0.4"]
-                 [org.apache.commons/commons-lang3       "3.9"]
-                 [org.uncommons.maths/uncommons-maths "1.2.2a"]
-                 [kongra/ch                           "0.1.27"]
-                 [org.clojure/clojurescript         "1.10.597"]]
-
-  :plugins      [[lein-cljsbuild "1.1.7"]]
+                 [org.apache.commons/commons-lang3      "3.11"]
+                 #_[org.uncommons.maths/uncommons-maths "1.2.2a"]
+                 [org.clojure/test.check               "1.1.0"]
+                 [kongra/ch                           "0.1.28"]]
 
   :aot          :all
-  :source-paths ["src/main/clojure" "src/main/cljs"]
+  :source-paths ["src/main/clj"]
   :test-paths   ["test/clojure"]
 
   :java-source-paths ["src/main/java"]
@@ -31,39 +29,16 @@
 
   :clean-targets ^{:protect false} ["target"]
 
-  :aliases {"fig:repl" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]}
-
-  :profiles {:repl {:dependencies [[org.clojure/test.check  "1.0.0"]]
+  :profiles {:repl {:dependencies []
                     :plugins      [[lein-nodisassemble      "0.1.3"]
-                                   [cider/cider-nrepl       "0.25.0-SNAPSHOT"]]
+                                   [cider/cider-nrepl      "0.25.9"]]
 
                     :middleware   [lein-nodisassemble.plugin/middleware
                                    cider-nrepl.plugin/middleware]
 
-                    :jvm-opts [;; "-Dclojure.compiler.direct-linking=false"
+                    :jvm-opts ["-Dclojure.compiler.direct-linking=false"
                                "-XX:+DoEscapeAnalysis"
-                               "-XX:+UseCompressedOops"
                                "-Xms1G"
                                "-Xmx1G"
                                ;; "-verbose:gc"
-                               ]}
-
-             :dev  {:dependencies  [[com.bhauman/figwheel-main       "0.2.3"]
-                                    [com.bhauman/rebel-readline-cljs "0.1.4"]]
-
-                    :source-paths   ["src/main/cljs"]
-                    :resource-paths ["target"]}}
-  :cljsbuild
-  {:builds
-   [{:id "min"
-     :source-paths ["src/main/cljs"]
-     :compiler {:output-to       "resources/public/js/prelude.js"
-                :main             cljs.kongra.prelude
-                :optimizations    :advanced
-                :static-fns       true
-                :fn-invoke-direct true
-                :pretty-print     false
-                :elide-asserts    true
-                }}]}
-
-  :figwheel { :css-dirs ["resources/public/css"]})
+                               ]}})
