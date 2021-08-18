@@ -30,8 +30,8 @@
   :clean-targets ^{:protect false} ["target"]
 
   :profiles {:repl {:dependencies []
-                    :plugins      [[lein-nodisassemble      "0.1.3"]
-                                   [cider/cider-nrepl      "0.25.9"]]
+                    :plugins      [[lein-nodisassemble  "0.1.3"]
+                                   [cider/cider-nrepl  "0.26.0"]]
 
                     :middleware   [lein-nodisassemble.plugin/middleware
                                    cider-nrepl.plugin/middleware]
