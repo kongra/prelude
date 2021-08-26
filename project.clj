@@ -35,7 +35,7 @@
                     :middleware   [lein-nodisassemble.plugin/middleware
                                    cider-nrepl.plugin/middleware]
 
-                    :jvm-opts ["-Dclojure.compiler.direct-linking=false"
+                    :jvm-opts ["-Dclojure.compiler.direct-linking=true"
                                "-XX:+DoEscapeAnalysis"
                                "-Xms1G"
                                "-Xmx1G"
