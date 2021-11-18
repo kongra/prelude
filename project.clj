@@ -1,5 +1,5 @@
 ;; Copyright (c) Konrad Grzanek
-;; Created 2019-01-05
+
 (defproject kongra/prelude "0.1.21"
   :description  "Predule codebase for Clojure"
   :url          "https://github.com/kongra/prelude"
@@ -35,7 +35,7 @@
                     :middleware   [lein-nodisassemble.plugin/middleware
                                    cider-nrepl.plugin/middleware]
 
-                    :jvm-opts ["-Dclojure.compiler.direct-linking=true"
+                    :jvm-opts ["-Dclojure.compiler.direct-linking=false"
                                "-XX:+DoEscapeAnalysis"
                                "-Xms1G"
                                "-Xmx1G"
